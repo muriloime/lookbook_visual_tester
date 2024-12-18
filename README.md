@@ -22,7 +22,7 @@ gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
 
 ## Usage
 
-TODO: Write usage instructions here
+bundle exec rake lookbook_visual_tester:run LOOKBOOK_HOST=https://localhost:5000
 
 ## Development
 

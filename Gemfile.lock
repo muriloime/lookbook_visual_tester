@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    lookbook_visual_tester (0.1.0)
+    lookbook_visual_tester (0.1.1)
       capybara
       cuprite
       lookbook
