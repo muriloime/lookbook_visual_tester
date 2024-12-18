@@ -1,29 +1,29 @@
 # lib/tasks/lookbook_visual_tester.rake
 
+require "capybara"
+require "capybara/cuprite"
+require "fileutils"
+require "mini_magick"
+
 namespace :lookbook_visual_tester do
   desc "Run visual regression tests for Lookbook previews"
   task run: :environment do
-    require 'capybara'
-    require 'capybara/cuprite'
-    require 'fileutils'
-    require 'mini_magick'
-
     # Setup Capybara
     LookbookVisualTester::CapybaraSetup.setup
     session = Capybara::Session.new(:cuprite)
 
     # Directories for screenshots
-    base_path = Rails.root.join('spec', 'visual_screenshots')
-    baseline_dir = base_path.join('baseline')
-    current_dir = base_path.join('current_run')
-    diff_dir = base_path.join('diff')
+    base_path = Rails.root.join("spec/visual_screenshots")
+    baseline_dir = base_path.join("baseline")
+    current_dir = base_path.join("current_run")
+    diff_dir = base_path.join("diff")
 
     [baseline_dir, current_dir, diff_dir].each do |dir|
       FileUtils.mkdir_p(dir) unless Dir.exist?(dir)
     end
 
     # Enumerate Lookbook previews
-    previews = Lookbook::PreviewRegistry.previews
+    previews = Lookbook.previews
 
     if previews.empty?
       puts "No Lookbook previews found."
@@ -39,10 +39,12 @@ namespace :lookbook_visual_tester do
         puts "  Scenario: #{scenario_name}"
 
         # Generate preview URL
+        # binding.pry
         preview_url = Lookbook::Engine.routes.url_helpers.lookbook_preview_url(
-          preview: preview.name,
-          scenario: scenario.name,
-          host: ENV['LOOKBOOK_HOST'] || 'localhost:3000'
+          # preview: preview.name,
+          path: preview.lookup_path + "/" + scenario.name,
+          # scenario: scenario.name,
+          host: ENV["LOOKBOOK_HOST"] || "localhost:3000"
         )
 
         puts "    Visiting URL: #{preview_url}"
@@ -106,16 +108,16 @@ namespace :lookbook_visual_tester do
 
   desc "Update baseline screenshots with current_run screenshots"
   task update_baseline: :environment do
-    base_path = Rails.root.join('spec', 'visual_screenshots')
-    baseline_dir = base_path.join('baseline')
-    current_dir = base_path.join('current_run')
+    base_path = Rails.root.join("spec/visual_screenshots")
+    baseline_dir = base_path.join("baseline")
+    current_dir = base_path.join("current_run")
 
     unless current_dir.exist?
       puts "Current run directory does not exist. Run the visual regression tests first."
       exit
     end
 
-    Dir.glob(current_dir.join('*.png')).each do |current_file|
+    Dir.glob(current_dir.join("*.png")).each do |current_file|
       filename = File.basename(current_file)
       baseline_file = baseline_dir.join(filename)
       FileUtils.cp(current_file, baseline_file)
@@ -124,8 +126,8 @@ namespace :lookbook_visual_tester do
   end
 
   def generate_report(baseline_dir, current_dir, diff_dir, base_path)
-    report_path = base_path.join('report.html')
-    File.open(report_path, 'w') do |file|
+    report_path = base_path.join("report.html")
+    File.open(report_path, "w") do |file|
       file.puts "<!DOCTYPE html>"
       file.puts "<html lang='en'>"
       file.puts "<head><meta charset='UTF-8'><title>Visual Regression Report</title></head>"
@@ -133,11 +135,11 @@ namespace :lookbook_visual_tester do
       file.puts "<h1>Visual Regression Report</h1>"
       file.puts "<ul>"
 
-      Dir.glob(diff_dir.join('*_diff.png')).each do |diff_file|
+      Dir.glob(diff_dir.join("*_diff.png")).each do |diff_file|
         filename = File.basename(diff_file)
         # Extract preview and scenario names
-        preview_scenario = filename.sub('_diff.png', '')
-        preview, scenario = preview_scenario.split('_', 2)
+        preview_scenario = filename.sub("_diff.png", "")
+        preview, scenario = preview_scenario.split("_", 2)
 
         baseline_image = baseline_dir.join("#{preview}_#{scenario}.png")
         current_image = current_dir.join("#{preview}_#{scenario}.png")
