@@ -147,9 +147,14 @@ namespace :lookbook_visual_tester do
         file.puts "<li>"
         file.puts "<h2>#{preview.titleize} - #{scenario.titleize}</h2>"
         file.puts "<div style='display: flex; gap: 10px;'>"
-        file.puts "<div><h3>Baseline</h3><img src='#{baseline_image.relative_path_from(base_path)}' alt='Baseline'></div>"
-        file.puts "<div><h3>Current</h3><img src='#{current_image.relative_path_from(base_path)}' alt='Current'></div>"
-        file.puts "<div><h3>Diff</h3><img src='#{diff_file.relative_path_from(base_path)}' alt='Diff'></div>"
+
+        baseline_image_path = Pathname.new(baseline_image)
+        current_image_path = Pathname.new(current_image)
+        diff_file_path = Pathname.new(diff_file)
+
+        file.puts "<div><h3>Baseline</h3><img src='#{baseline_image_path.relative_path_from(base_path)}' alt='Baseline'></div>"
+        file.puts "<div><h3>Current</h3><img src='#{current_image_path.relative_path_from(base_path)}' alt='Current'></div>"
+        file.puts "<div><h3>Diff</h3><img src='#{diff_file_path.relative_path_from(base_path)}' alt='Diff'></div>"
         file.puts "</div>"
         file.puts "</li>"
       end
