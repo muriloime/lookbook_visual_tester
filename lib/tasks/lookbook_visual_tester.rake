@@ -52,6 +52,7 @@ namespace :lookbook_visual_tester do
         # Visit the preview URL
         begin
           session.visit(preview_url)
+          sleep(1)
         rescue StandardError => e
           puts "    Error visiting URL: #{e.message}"
           next
