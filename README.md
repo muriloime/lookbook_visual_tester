@@ -1,8 +1,6 @@
 # LookbookVisualTester
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/lookbook_visual_tester`. To experiment with that code, run `bin/console` for an interactive prompt.
+This gem was built to serve as a lookbook regression tester, getting prints from previews, comparing them and generating a report of differences.
 
 ## Installation
 
