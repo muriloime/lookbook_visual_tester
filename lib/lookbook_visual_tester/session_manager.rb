@@ -1,5 +1,7 @@
 # Setup Capybara
 require "singleton"
+require "capybara"
+require "capybara/cuprite"
 
 module LookbookVisualTester
   class SessionManager

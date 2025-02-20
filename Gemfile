@@ -11,8 +11,11 @@ gem "minitest", "~> 5.16"
 
 gem "rubocop", "~> 1.21"
 
-gem "rails", "~> 7.0"
+gem "async"
+gem "async-http"
+gem "concurrent-ruby"
 gem "lookbook"
+gem "rails", "~> 7.0"
 
 group :development, :test do
   gem "capybara", "~> 3.35"

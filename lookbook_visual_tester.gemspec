@@ -40,6 +40,7 @@ Gem::Specification.new do |spec|
   # spec.add_dependency "playwright-ruby"
   spec.add_dependency "cuprite"
 
+  spec.add_dependency "concurrent-ruby"
   spec.add_dependency "lookbook"
   spec.add_dependency "mini_magick" # or "chunky_png" for image diffs
   spec.add_dependency "rails"

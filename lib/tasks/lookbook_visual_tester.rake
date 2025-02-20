@@ -1,10 +1,8 @@
 # lib/tasks/lookbook_visual_tester.rake
-
-require "capybara"
-require "capybara/cuprite"
 require "fileutils"
 require "mini_magick"
 require "ruby-prof"
+require "concurrent-ruby"
 
 require "lookbook_visual_tester/report_generator"
 require "lookbook_visual_tester/screenshot_taker"
@@ -28,7 +26,6 @@ namespace :lookbook_visual_tester do
     image_comparator = LookbookVisualTester::ImageComparator.new
     report = LookbookVisualTester::ReportGenerator.new
 
-    # Enumerate Lookbook previews
     previews = Lookbook.previews
 
     if previews.empty?
@@ -36,30 +33,30 @@ namespace :lookbook_visual_tester do
       exit
     end
 
-    previews[..5].each do |preview|
+    pool = Concurrent::FixedThreadPool.new(3)
+    previews.each do |preview|
       preview_name = preview.name.underscore
       puts "Processing Preview: #{preview_name}"
 
-      preview.scenarios[..5].each do |scenario|
-        scenario_run = LookbookVisualTester::ScenarioRun.new(scenario)
+      preview.scenarios.each do |scenario|
+        Concurrent::Promises.future_on(pool) do
+          scenario_run = LookbookVisualTester::ScenarioRun.new(scenario)
 
-        # Generate preview URL
-        # binding.pry
-        preview_url = Lookbook::Engine.routes.url_helpers.lookbook_preview_url(
-          # preview: preview.name,
-          path: preview.lookup_path + "/" + scenario.name,
-          # scenario: scenario.name,
-          host: ENV["LOOKBOOK_HOST"] || "https://localhost:5000"
-        )
+          preview_url = Lookbook::Engine.routes.url_helpers.lookbook_preview_url(
+            path: preview.lookup_path + "/" + scenario.name,
+            host: ENV["LOOKBOOK_HOST"] || "https://localhost:5000"
+          )
 
-        screenshot_taker.capture(preview_url, scenario_run.current_path)
-        puts "    Visiting URL: #{preview_url}"
+          screenshot_taker.capture(preview_url, scenario_run.current_path)
+          puts "    Visiting URL: #{preview_url}"
 
-        image_comparator.compare(scenario_run)
+          image_comparator.compare(scenario_run)
+        end
       end
     end
 
-    # Generate HTML report
+    pool.shutdown
+    pool.wait_for_termination
     report_path = report.generate
     puts "Visual regression report generated at #{report_path}"
   end
