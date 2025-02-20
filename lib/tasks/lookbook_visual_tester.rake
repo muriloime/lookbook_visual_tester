@@ -4,24 +4,28 @@ require "capybara"
 require "capybara/cuprite"
 require "fileutils"
 require "mini_magick"
+require "ruby-prof"
 
 require "lookbook_visual_tester/report_generator"
 require "lookbook_visual_tester/screenshot_taker"
+require "lookbook_visual_tester/image_comparator"
+require "lookbook_visual_tester/scenario_run"
 
 namespace :lookbook_visual_tester do
+  desc "Profile the lookbook_visual_tester:run task"
+  task profile: :environment do
+    RubyProf.start
+    Rake::Task["lookbook_visual_tester:run"].invoke
+    result = RubyProf.stop
+
+    printer = RubyProf::FlatPrinter.new(result)
+    printer.print(STDOUT)
+  end
+
   desc "Run visual regression tests for Lookbook previews"
   task run: :environment do
     screenshot_taker = LookbookVisualTester::ScreenshotTaker.new
-
-    # Directories for screenshots
-    base_path = Rails.root.join("spec/visual_screenshots")
-    baseline_dir = base_path.join("baseline")
-    current_dir = base_path.join("current_run")
-    diff_dir = base_path.join("diff")
-
-    [baseline_dir, current_dir, diff_dir].each do |dir|
-      FileUtils.mkdir_p(dir) unless Dir.exist?(dir)
-    end
+    image_comparator = LookbookVisualTester::ImageComparator.new
 
     # Enumerate Lookbook previews
     previews = Lookbook.previews
@@ -36,14 +40,7 @@ namespace :lookbook_visual_tester do
       puts "Processing Preview: #{preview_name}"
 
       preview.scenarios[..5].each do |scenario|
-        scenario_name = scenario.name.underscore
-        puts "  Scenario: #{scenario_name}"
-
-        # Define screenshot paths
-        filename = "#{preview_name}_#{scenario_name}.png"
-        current_path = current_dir.join(filename)
-        baseline_path = baseline_dir.join(filename)
-        diff_path = diff_dir.join("#{preview_name}_#{scenario_name}_diff.png")
+        scenario_run = LookbookVisualTester::ScenarioRun.new(scenario)
 
         # Generate preview URL
         # binding.pry
@@ -54,42 +51,10 @@ namespace :lookbook_visual_tester do
           host: ENV["LOOKBOOK_HOST"] || "https://localhost:5000"
         )
 
-        screenshot_taker.capture(preview_url, current_path)
-
+        screenshot_taker.capture(preview_url, scenario_run.current_path)
         puts "    Visiting URL: #{preview_url}"
 
-        # Compare with baseline if it exists
-        if baseline_path.exist?
-          baseline_image = MiniMagick::Image.open(baseline_path)
-          current_image = MiniMagick::Image.open(current_path)
-
-          # Ensure images are the same dimensions
-          unless baseline_image.dimensions == current_image.dimensions
-            puts "    Image dimensions do not match. Skipping comparison."
-            next
-          end
-
-          # Compare images using ImageMagick's compare
-          begin
-            compare_command = "compare -metric AE \"#{baseline_path}\" \"#{current_path}\" \"#{diff_path}\" 2>&1"
-            result = `#{compare_command}`
-            distortion = result.strip.to_i
-
-            if distortion > 0
-              puts "    Differences found! Diff image saved to #{diff_path}"
-            else
-              puts "    No differences detected."
-              # Remove diff image if exists
-              File.delete(diff_path) if diff_path.exist?
-            end
-          rescue StandardError => e
-            puts "    Error comparing images: #{e.message}"
-          end
-        else
-          # If no baseline exists, copy current to baseline
-          FileUtils.cp(current_path, baseline_path)
-          puts "    Baseline image created at #{baseline_path}"
-        end
+        image_comparator.compare(scenario_run)
       end
     end
 

@@ -43,6 +43,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "lookbook"
   spec.add_dependency "mini_magick" # or "chunky_png" for image diffs
   spec.add_dependency "rails"
+  spec.add_dependency "ruby-prof"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

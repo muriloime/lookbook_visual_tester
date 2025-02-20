@@ -18,7 +18,7 @@ module LookbookVisualTester
 
     def visit_preview(preview_url)
       session.visit(preview_url)
-      sleep 1
+      session.assert_selector("body", wait: 10)
     rescue StandardError => e
       logger.puts "    Error visiting URL: #{e.message}"
       raise e
