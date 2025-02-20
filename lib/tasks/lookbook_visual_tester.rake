@@ -26,6 +26,7 @@ namespace :lookbook_visual_tester do
   task run: :environment do
     screenshot_taker = LookbookVisualTester::ScreenshotTaker.new
     image_comparator = LookbookVisualTester::ImageComparator.new
+    report = LookbookVisualTester::ReportGenerator.new
 
     # Enumerate Lookbook previews
     previews = Lookbook.previews
@@ -59,7 +60,6 @@ namespace :lookbook_visual_tester do
     end
 
     # Generate HTML report
-    report = LookbookVisualTester::ReportGenerator.new(baseline_dir, current_dir, diff_dir, base_path)
     report_path = report.generate
     puts "Visual regression report generated at #{report_path}"
   end

@@ -2,11 +2,11 @@ module LookbookVisualTester
   class ReportGenerator
     attr_reader :report_path, :baseline_dir, :current_dir, :diff_dir, :base_path
 
-    def initialize(baseline_dir, current_dir, diff_dir, base_path)
-      @baseline_dir = baseline_dir
-      @current_dir = current_dir
-      @diff_dir = diff_dir
-      @base_path = base_path
+    def initialize
+      @baseline_dir, @current_dir, @diff_dir, @base_path = LookbookVisualTester.config.then do |config|
+        [config.baseline_dir, config.current_dir, config.diff_dir, config.base_path]
+      end
+
       @report_path = base_path.join("report.html")
     end
 
