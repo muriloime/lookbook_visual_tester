@@ -5,12 +5,13 @@ require "capybara/cuprite"
 require "fileutils"
 require "mini_magick"
 
+require "lookbook_visual_tester/report_generator"
+require "lookbook_visual_tester/screenshot_taker"
+
 namespace :lookbook_visual_tester do
   desc "Run visual regression tests for Lookbook previews"
   task run: :environment do
-    # Setup Capybara
-    LookbookVisualTester::CapybaraSetup.setup
-    session = Capybara::Session.new(:cuprite)
+    screenshot_taker = LookbookVisualTester::ScreenshotTaker.new
 
     # Directories for screenshots
     base_path = Rails.root.join("spec/visual_screenshots")
@@ -30,33 +31,13 @@ namespace :lookbook_visual_tester do
       exit
     end
 
-    previews.each do |preview|
+    previews[..5].each do |preview|
       preview_name = preview.name.underscore
       puts "Processing Preview: #{preview_name}"
 
-      preview.scenarios.each do |scenario|
+      preview.scenarios[..5].each do |scenario|
         scenario_name = scenario.name.underscore
         puts "  Scenario: #{scenario_name}"
-
-        # Generate preview URL
-        # binding.pry
-        preview_url = Lookbook::Engine.routes.url_helpers.lookbook_preview_url(
-          # preview: preview.name,
-          path: preview.lookup_path + "/" + scenario.name,
-          # scenario: scenario.name,
-          host: ENV["LOOKBOOK_HOST"] || "localhost:3000"
-        )
-
-        puts "    Visiting URL: #{preview_url}"
-
-        # Visit the preview URL
-        begin
-          session.visit(preview_url)
-          sleep(1)
-        rescue StandardError => e
-          puts "    Error visiting URL: #{e.message}"
-          next
-        end
 
         # Define screenshot paths
         filename = "#{preview_name}_#{scenario_name}.png"
@@ -64,9 +45,18 @@ namespace :lookbook_visual_tester do
         baseline_path = baseline_dir.join(filename)
         diff_path = diff_dir.join("#{preview_name}_#{scenario_name}_diff.png")
 
-        # Save current screenshot
-        session.save_screenshot(current_path)
-        puts "    Screenshot saved to #{current_path}"
+        # Generate preview URL
+        # binding.pry
+        preview_url = Lookbook::Engine.routes.url_helpers.lookbook_preview_url(
+          # preview: preview.name,
+          path: preview.lookup_path + "/" + scenario.name,
+          # scenario: scenario.name,
+          host: ENV["LOOKBOOK_HOST"] || "https://localhost:5000"
+        )
+
+        screenshot_taker.capture(preview_url, current_path)
+
+        puts "    Visiting URL: #{preview_url}"
 
         # Compare with baseline if it exists
         if baseline_path.exist?
@@ -104,7 +94,9 @@ namespace :lookbook_visual_tester do
     end
 
     # Generate HTML report
-    generate_report(baseline_dir, current_dir, diff_dir, base_path)
+    report = LookbookVisualTester::ReportGenerator.new(baseline_dir, current_dir, diff_dir, base_path)
+    report_path = report.generate
+    puts "Visual regression report generated at #{report_path}"
   end
 
   desc "Update baseline screenshots with current_run screenshots"
@@ -124,47 +116,5 @@ namespace :lookbook_visual_tester do
       FileUtils.cp(current_file, baseline_file)
       puts "Baseline updated for #{filename}"
     end
-  end
-
-  def generate_report(baseline_dir, current_dir, diff_dir, base_path)
-    report_path = base_path.join("report.html")
-    File.open(report_path, "w") do |file|
-      file.puts "<!DOCTYPE html>"
-      file.puts "<html lang='en'>"
-      file.puts "<head><meta charset='UTF-8'><title>Visual Regression Report</title></head>"
-      file.puts "<body>"
-      file.puts "<h1>Visual Regression Report</h1>"
-      file.puts "<ul>"
-
-      Dir.glob(diff_dir.join("*_diff.png")).each do |diff_file|
-        filename = File.basename(diff_file)
-        # Extract preview and scenario names
-        preview_scenario = filename.sub("_diff.png", "")
-        preview, scenario = preview_scenario.split("_", 2)
-
-        baseline_image = baseline_dir.join("#{preview}_#{scenario}.png")
-        current_image = current_dir.join("#{preview}_#{scenario}.png")
-
-        file.puts "<li>"
-        file.puts "<h2>#{preview.titleize} - #{scenario.titleize}</h2>"
-        file.puts "<div style='display: flex; gap: 10px;'>"
-
-        baseline_image_path = Pathname.new(baseline_image)
-        current_image_path = Pathname.new(current_image)
-        diff_file_path = Pathname.new(diff_file)
-
-        file.puts "<div><h3>Baseline</h3><img src='#{baseline_image_path.relative_path_from(base_path)}' alt='Baseline'></div>"
-        file.puts "<div><h3>Current</h3><img src='#{current_image_path.relative_path_from(base_path)}' alt='Current'></div>"
-        file.puts "<div><h3>Diff</h3><img src='#{diff_file_path.relative_path_from(base_path)}' alt='Diff'></div>"
-        file.puts "</div>"
-        file.puts "</li>"
-      end
-
-      file.puts "</ul>"
-      file.puts "</body>"
-      file.puts "</html>"
-    end
-
-    puts "Visual regression report generated at #{report_path}"
   end
 end
