@@ -6,6 +6,8 @@ module LookbookVisualTester
   class ScreenshotTaker
     attr_reader :session, :logger
 
+    CLIPBOARD = 'clipboard'
+
     def initialize(logger: Kernel)
       Capybara.register_driver :cuprite do |app|
         Capybara::Cuprite::Driver.new(
@@ -23,7 +25,7 @@ module LookbookVisualTester
       @logger = logger
     end
 
-    def capture(preview_url, path)
+    def capture(preview_url, path = CLIPBOARD)
       FileUtils.mkdir_p(File.dirname(path))
 
       session.visit(preview_url)
@@ -31,23 +33,27 @@ module LookbookVisualTester
       # Wait for network requests to complete
       # session.driver.network_idle?
 
-      # Wait for any loading indicators to disappear
-      begin
-        session.has_no_css?(".loading", wait: 10)
-      rescue StandardError
-        nil
-      end
-
       # Additional wait for any JavaScript animations
       sleep 1
-
-      save_screenshot(path)
+      if path == CLIPBOARD
+        save_to_clipboard
+      else
+        save_screenshot(path)
+      end
     rescue StandardError => e
       logger.puts "Error capturing screenshot for #{preview_url}: #{e.message}"
       raise e
     end
 
     private
+    def save_to_clipboard
+      Tempfile.create(['screenshot', '.png']) do |file|
+        session.save_screenshot(file.path)
+
+        # Example: Copy to clipboard (Linux xclip)
+        system("xclip -selection clipboard -t image/png -i #{file.path}")
+      end
+    end
 
     def save_screenshot(path)
       session.save_screenshot(path)

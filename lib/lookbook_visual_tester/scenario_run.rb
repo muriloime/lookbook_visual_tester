@@ -34,5 +34,12 @@ module LookbookVisualTester
     def baseline_path
       LookbookVisualTester.config.baseline_dir.join(filename)
     end
+
+    def preview_url
+      Lookbook::Engine.routes.url_helpers.lookbook_preview_url(
+        path: preview.lookup_path + "/" + scenario.name,
+        host: LookbookVisualTester.config.host
+      )
+    end
   end
 end

@@ -20,6 +20,28 @@ namespace :lookbook_visual_tester do
     printer.print(STDOUT)
   end
 
+  desc "Run and copy to clipboard first scenario matching the given name"
+  task :copy, [:name] => :environment do |t, args|
+    # example on how to run: `rake lookbook_visual_tester:copy["Button"]`
+
+    screenshot_taker = LookbookVisualTester::ScreenshotTaker.new
+    previews = Lookbook.previews
+
+    regex = Regexp.new(args[:name].chars.join(".*"), Regexp::IGNORECASE)
+    matched_previews = previews.select { |preview| regex.match?(preview.name.underscore) }
+    if matched_previews.empty?
+      puts "No Lookbook previews found matching #{args[:name]}"
+      exit
+    end
+    matched_previews.each do |preview|
+      preview.scenarios.each do |scenario|
+        scenario_run = LookbookVisualTester::ScenarioRun.new(scenario)
+        screenshot_taker.capture(scenario_run.preview_url)
+        exit
+      end
+    end
+  end
+
   desc "Run visual regression tests for Lookbook previews"
   task run: :environment do
     screenshot_taker = LookbookVisualTester::ScreenshotTaker.new
@@ -42,12 +64,7 @@ namespace :lookbook_visual_tester do
         Concurrent::Promises.future_on(pool) do
           scenario_run = LookbookVisualTester::ScenarioRun.new(scenario)
 
-          preview_url = Lookbook::Engine.routes.url_helpers.lookbook_preview_url(
-            path: preview.lookup_path + "/" + scenario.name,
-            host: ENV["LOOKBOOK_HOST"] || "https://localhost:5000"
-          )
-
-          screenshot_taker.capture(preview_url, scenario_run.current_path)
+          screenshot_taker.capture(scenario_run.preview_url, scenario_run.current_path)
           puts "    Visiting URL: #{preview_url}"
 
           image_comparator.compare(scenario_run)
