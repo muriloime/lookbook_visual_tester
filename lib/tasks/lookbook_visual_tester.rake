@@ -33,7 +33,7 @@ namespace :lookbook_visual_tester do
       exit
     end
 
-    pool = Concurrent::FixedThreadPool.new(3)
+    pool = Concurrent::FixedThreadPool.new(LookbookVisualTester.config.threads)
     previews.each do |preview|
       preview_name = preview.name.underscore
       puts "Processing Preview: #{preview_name}"

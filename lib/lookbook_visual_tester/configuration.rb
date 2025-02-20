@@ -1,12 +1,16 @@
 module LookbookVisualTester
   class Configuration
-    attr_accessor :base_path, :baseline_dir, :current_dir, :diff_dir
+    attr_accessor :base_path, :baseline_dir, :current_dir, :diff_dir, :threads
+
+    DEFAULT_THREADS = 4
 
     def initialize
       @base_path = Rails.root.join("spec/visual_screenshots")
       @baseline_dir = @base_path.join("baseline")
       @current_dir = @base_path.join("current_run")
       @diff_dir = @base_path.join("diff")
+
+      @threads = DEFAULT_THREADS
 
       [baseline_dir, current_dir, diff_dir].each do |dir|
         FileUtils.mkdir_p(dir) unless Dir.exist?(dir)
