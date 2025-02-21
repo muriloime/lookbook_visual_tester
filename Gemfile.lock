@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    lookbook_visual_tester (0.1.2)
+    lookbook_visual_tester (0.1.3)
       capybara
       concurrent-ruby
       cuprite
