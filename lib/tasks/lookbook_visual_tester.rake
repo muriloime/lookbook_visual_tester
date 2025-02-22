@@ -27,19 +27,13 @@ namespace :lookbook_visual_tester do
     screenshot_taker = LookbookVisualTester::ScreenshotTaker.new
     previews = Lookbook.previews
 
-    regex = Regexp.new(args[:name].chars.join('.*'), Regexp::IGNORECASE)
-    matched_previews = previews.select { |preview| regex.match?(preview.name.underscore) }
-    if matched_previews.empty?
+    scenario_run = LookbookVisualTester::ScenarioFinder.call(args[:name], previews)
+    unless scenario_run
       puts "No Lookbook previews found matching #{args[:name]}"
       exit
     end
-    matched_previews.each do |preview|
-      preview.scenarios.each do |scenario|
-        scenario_run = LookbookVisualTester::ScenarioRun.new(scenario)
-        screenshot_taker.capture(scenario_run.preview_url)
-        exit
-      end
-    end
+    screenshot_taker.capture(scenario_run.preview_url)
+    exit
   end
 
   desc 'Run visual regression tests for Lookbook previews'

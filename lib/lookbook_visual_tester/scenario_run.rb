@@ -19,8 +19,12 @@ module LookbookVisualTester
       scenario.name.underscore
     end
 
+    def name
+      "#{preview_name}_#{scenario_name}"
+    end
+
     def filename
-      "#{preview_name}_#{scenario_name}.png"
+      "#{name}.png"
     end
 
     def diff_filename
