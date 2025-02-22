@@ -35,14 +35,14 @@ module LookbookVisualTester
       #   nil
       # end
       if path == CLIPBOARD
-        save_to_clipboard
+        print_and_save_to_clipboard
       else
         save_printscreen
       end
       # Additional wait for any JavaScript animations
       sleep 1
     rescue StandardError => e
-      logger.puts "Error capturing screenshot for #{preview_url}: #{e.message}"
+      logger.info "Error capturing screenshot for #{preview_url}: #{e.message}"
       raise e
     end
 

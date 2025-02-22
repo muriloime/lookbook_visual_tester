@@ -87,13 +87,13 @@ RSpec.describe LookbookVisualTester::UpdatePreviews do
     before do
       allow(Lookbook).to receive(:previews).and_return([preview])
       allow(LookbookVisualTester::ScenarioRun).to receive(:new).with(scenario).and_return(scenario_run)
-      allow(LookbookVisualTester::ScreenshotTaker).to receive(:new).and_return(double(capture: true))
+      allow(LookbookVisualTester::ScreenshotTaker).to receive(:new).and_return(double(call: true))
       allow(Rails.logger).to receive(:info) # Ensure logger.info is stubbed
     end
 
     it 'processes each preview and takes screenshots' do
       expect(LookbookVisualTester::ScreenshotTaker).to receive(:new)
-      expect_any_instance_of(LookbookVisualTester::ScreenshotTaker).to receive(:capture).with('url', 'path')
+      expect_any_instance_of(LookbookVisualTester::ScreenshotTaker).to receive(:call).with('url', 'path')
 
       # Verify logging
       expect(Rails.logger).to receive(:info).with("LookbookVisualTester: previews #{[preview].count}")
