@@ -21,10 +21,9 @@ RSpec.describe LookbookVisualTester::ScenarioFinder do
     end
 
     context 'with matching scenarios' do
-      let(:scenario) { double('Scenario', name: 'Primary Button') }
+      let(:scenario) { double('Scenario', name: 'Primary Button', preview: preview) }
 
       let(:preview) { double('Preview', name: 'ButtonPreview', scenarios: [scenario]) }
-      let(:scenario_run) { double('Scenario', name: 'Primary Button', preview:) }
       let(:previews) { [preview] }
 
       xit 'returns a ScenarioRun for the matching scenario' do

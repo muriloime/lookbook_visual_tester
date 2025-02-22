@@ -10,7 +10,7 @@ module LookbookVisualTester
     end
 
     initializer 'LookbookVisualTester.lookbook_after_change' do |app1|
-      puts " >>>>> lookbook_after_change initialized: #{app1.inspect}"
+      Rails.logger.info " >>>>> lookbook_after_change initialized: #{app1.inspect}"
       Lookbook.after_change do |app, changes|
         LookbookVisualTester::UpdatePreviews.call(app, changes)
       end

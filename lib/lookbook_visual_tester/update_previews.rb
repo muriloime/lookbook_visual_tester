@@ -50,7 +50,7 @@ module LookbookVisualTester
     end
 
     def process_changes
-      Rails.logger.info "LookbookVisualTester: previws #{previews.count}"
+      Rails.logger.info "LookbookVisualTester: previews #{previews.count}"
       previews.each do |preview|
         Rails.logger.info "LookbookVisualTester: entering #{preview.inspect}"
 

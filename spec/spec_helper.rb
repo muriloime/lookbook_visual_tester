@@ -1,6 +1,10 @@
 require 'bundler/setup'
 require 'lookbook_visual_tester'
 require 'lookbook'
+require_relative 'support/rails_mock_helper'
+
+# Require support files
+Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require f }
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -17,4 +21,10 @@ RSpec.configure do |config|
   # Run specs in random order
   config.order = :random
   Kernel.srand config.seed
+
+  config.include RailsMockHelper
+
+  config.before(:suite) do
+    RailsMockHelper.mock_rails_logger
+  end
 end
