@@ -1,4 +1,4 @@
-require "lookbook_visual_tester/configuration"
+require 'lookbook_visual_tester/configuration'
 
 module LookbookVisualTester
   class ImageComparator
@@ -22,7 +22,7 @@ module LookbookVisualTester
         current_image  = MiniMagick::Image.open(current_path)
 
         unless baseline_image.dimensions == current_image.dimensions
-          puts "    Image dimensions do not match. Skipping comparison."
+          puts '    Image dimensions do not match. Skipping comparison.'
           return
         end
 
@@ -34,7 +34,7 @@ module LookbookVisualTester
           if distortion > 0
             puts "    Differences found! Diff image saved to #{diff_path}"
           else
-            puts "    No differences detected."
+            puts '    No differences detected.'
             File.delete(diff_path) if diff_path.exist?
           end
         rescue StandardError => e

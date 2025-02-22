@@ -1,4 +1,4 @@
-require "lookbook_visual_tester/configuration"
+require 'lookbook_visual_tester/configuration'
 
 module LookbookVisualTester
   class ScenarioRun
@@ -37,7 +37,7 @@ module LookbookVisualTester
 
     def preview_url
       Lookbook::Engine.routes.url_helpers.lookbook_preview_url(
-        path: preview.lookup_path + "/" + scenario.name,
+        path: preview.lookup_path + '/' + scenario.name,
         host: LookbookVisualTester.config.host
       )
     end

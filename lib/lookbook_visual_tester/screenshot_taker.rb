@@ -1,19 +1,19 @@
-require "lookbook_visual_tester/session_manager"
-require "capybara/cuprite"
-require "fileutils"
+require 'lookbook_visual_tester/session_manager'
+require 'capybara/cuprite'
+require 'fileutils'
 
 module LookbookVisualTester
   class ScreenshotTaker
     attr_reader :session, :logger
 
-    CLIPBOARD = "clipboard"
+    CLIPBOARD = 'clipboard'
 
     def initialize(logger: Kernel)
       Capybara.register_driver :cuprite do |app|
         Capybara::Cuprite::Driver.new(
           app,
           window_size: [1400, 1400],
-          browser_options: { "ignore-certificate-errors" => nil },
+          browser_options: { 'ignore-certificate-errors' => nil },
           timeout: 20,
           process_timeout: 20
         )
@@ -40,9 +40,9 @@ module LookbookVisualTester
       #   nil
       # end
       if path == CLIPBOARD
-        save_to_clipboard(crop: crop)
+        save_to_clipboard(crop:)
       else
-        save_printscreen(path: path, crop: crop)
+        save_printscreen(path:, crop:)
       end
       # Additional wait for any JavaScript animations
       sleep 1
@@ -54,8 +54,8 @@ module LookbookVisualTester
     private
 
     def save_to_clipboard(crop: false)
-      Tempfile.create(["screenshot", ".png"]) do |file|
-        session.save_screenshot(file.path, crop: crop)
+      Tempfile.create(['screenshot', '.png']) do |file|
+        session.save_screenshot(file.path, crop:)
 
         # Example: Copy to clipboard (Linux xclip)
         system("xclip -selection clipboard -t image/png -i #{file.path}")

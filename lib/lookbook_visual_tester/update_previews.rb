@@ -34,7 +34,7 @@ module LookbookVisualTester
     end
 
     def process_change?(change)
-      change.to_s.downcase.include?("preview.rb") || change.to_s.downcase.match?(/component\.(html|haml|rb|erb)/)
+      change.to_s.downcase.include?('preview.rb') || change.to_s.downcase.match?(/component\.(html|haml|rb|erb)/)
     end
 
     def should_process?
@@ -44,7 +44,7 @@ module LookbookVisualTester
     end
 
     def clean_file_name(file)
-      file.split("/")[-1].split(".")[0]
+      file.split('/')[-1].split('.')[0]
     end
 
     def previews
@@ -61,7 +61,8 @@ module LookbookVisualTester
         preview.scenarios.each do |scenario|
           scenario_run = LookbookVisualTester::ScenarioRun.new(scenario)
           Rails.logger.info "LookbookVisualTester: Processing scenario #{scenario_run.inspect}"
-          LookbookVisualTester::ScreenshotTaker.new.capture(scenario_run.preview_url, scenario_run.current_path)
+          LookbookVisualTester::ScreenshotTaker.new.capture(scenario_run.preview_url,
+                                                            scenario_run.current_path)
         end
       end
     end

@@ -1,11 +1,12 @@
-require "capybara"
-require "capybara/cuprite"
+require 'capybara'
+require 'capybara/cuprite'
 
 module LookbookVisualTester
   module CapybaraSetup
     def self.setup
       Capybara.register_driver :cuprite do |app|
-        Capybara::Cuprite::Driver.new(app, headless: true, browser_options: { "ignore-certificate-errors" => true })
+        Capybara::Cuprite::Driver.new(app, headless: true,
+                                           browser_options: { 'ignore-certificate-errors' => true })
       end
 
       Capybara.default_driver = :cuprite
