@@ -5,16 +5,22 @@ require 'fileutils'
 
 module LookbookVisualTester
   class ScreenshotTaker < Service
-    attr_reader :session, :logger
+    attr_reader :preview_url, :path, :crop, :logger
 
     CLIPBOARD = 'clipboard'
 
-    def initialize(logger: Rails.logger)
-      @session = SessionManager.instance.session
+    def initialize(preview_url, path = CLIPBOARD, crop: true, logger: Rails.logger)
+      @preview_url = preview_url
+      @path = path
+      @crop = crop
       @logger = logger
     end
 
-    def capture(preview_url, path = CLIPBOARD, crop: true)
+    def session
+      @session ||= SessionManager.instance.session
+    end
+
+    def call
       FileUtils.mkdir_p(File.dirname(path))
 
       session.visit(preview_url)
@@ -29,9 +35,9 @@ module LookbookVisualTester
       #   nil
       # end
       if path == CLIPBOARD
-        save_to_clipboard(crop:)
+        save_to_clipboard
       else
-        save_printscreen(path:, crop:)
+        save_printscreen
       end
       # Additional wait for any JavaScript animations
       sleep 1
@@ -40,17 +46,20 @@ module LookbookVisualTester
       raise e
     end
 
+    def save_to_clipboard(path = @path)
+      system("xclip -selection clipboard -t image/png -i #{path}")
+    end
+
     private
 
-    def save_to_clipboard(crop: false)
+    def print_and_save_to_clipboard
       Tempfile.create(['screenshot', '.png']) do |file|
-        session.save_screenshot(file.path, crop:)
-
-        system("xclip -selection clipboard -t image/png -i #{file.path}")
+        save_printscreen(file.path)
+        save_to_clipboard(file.path)
       end
     end
 
-    def save_printscreen(path: nil, crop: false)
+    def save_printscreen(path = @path)
       session.save_screenshot(path)
 
       # remove white space

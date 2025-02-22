@@ -57,8 +57,7 @@ module LookbookVisualTester
         preview.scenarios.each do |scenario|
           scenario_run = LookbookVisualTester::ScenarioRun.new(scenario)
           Rails.logger.info "LookbookVisualTester: Processing scenario #{scenario_run.inspect}"
-          LookbookVisualTester::ScreenshotTaker.new.capture(scenario_run.preview_url,
-                                                            scenario_run.current_path)
+          LookbookVisualTester::ScreenshotTaker.call(scenario_run)
         end
       end
     end
