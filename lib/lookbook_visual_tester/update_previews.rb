@@ -1,9 +1,5 @@
 module LookbookVisualTester
-  class UpdatePreviews
-    def self.call(...)
-      new(...).call
-    end
-
+  class UpdatePreviews < Service
     attr_reader :app, :changes
 
     def initialize(app, changes)
