@@ -1,8 +1,29 @@
-# LookbookVisualTester
+<img src="./assets/logo.jpg" alt="Logo" width="300" />
+
+# Lookbook Visual Tester
 
 This gem was built to serve as a lookbook regression tester, getting prints from previews, comparing them and generating a report of differences.
 
+
+### Features
+
+- Perform visual regression testing on changes.
+- Integrate seamlessly with your Lookbook previews.
+- Automatically generate image differences.
+- Simplify debugging and quality checks.
+- Very useful for AI coding (e.g. aider, etc.)
+
 ## Installation
+
+Tested on linux. A couple of changes to work on mac, etc. You will need tools like xclip, imagemagick
+
+For Ubuntu-based systems, install the necessary dependencies by running:
+
+```bash
+sudo apt-get install xclip imagemagick
+```
+
+
 
 Install the gem and add to the application's Gemfile by executing:
 
@@ -18,7 +39,12 @@ gem install lookbook_visual_tester
 
 ## Usage
 
+To run everything 
 bundle exec rake lookbook_visual_tester:run LOOKBOOK_HOST=https://localhost:5000
+
+### Features 
+
+When installed this gem gets your changes and generates 
 
 ## Development
 
@@ -32,6 +58,8 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/murilo
 
 
 ## Deployment 
+
+Generate artifacts for changelog : 
 
 `git log --pretty=format:"%h %ad | %s [%an]" --date=short --no-merges --name-only | xclip -selection clipboard`
 
