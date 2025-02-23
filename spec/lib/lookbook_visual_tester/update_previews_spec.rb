@@ -74,7 +74,7 @@ RSpec.describe LookbookVisualTester::UpdatePreviews do
     end
 
     it 'returns matching previews' do
-      expect(service.send(:previews)).to contain_exactly(preview)
+      expect(service.send(:selected_previews)).to contain_exactly(preview)
     end
   end
 

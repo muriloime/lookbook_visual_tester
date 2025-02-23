@@ -4,11 +4,12 @@ require 'tempfile'
 
 RSpec.describe LookbookVisualTester::ScreenshotTaker do
   let(:preview_url) { 'http://localhost:3000/preview' }
+  let(:scenario_run) { instance_double(LookbookVisualTester::ScenarioRun, preview_url:) }
   let(:path) { '/tmp/test_screenshot.png' }
   let(:logger) { instance_double(Logger, info: true, puts: true) }
   let(:session) { instance_double(Capybara::Session) }
   let(:session_manager) { instance_double(LookbookVisualTester::SessionManager, session:) }
-  let(:service) { described_class.new(preview_url, path, logger:) }
+  let(:service) { described_class.new(scenario_run:, path:, logger:) }
 
   before do
     allow(LookbookVisualTester::SessionManager).to receive(:instance).and_return(session_manager)
@@ -29,12 +30,12 @@ RSpec.describe LookbookVisualTester::ScreenshotTaker do
     end
 
     it 'allows crop to be set to false' do
-      service = described_class.new(preview_url, path, crop: false)
+      service = described_class.new(scenario_run:, path:, crop: false)
       expect(service.crop).to be false
     end
 
     it 'defaults path to clipboard' do
-      service = described_class.new(preview_url)
+      service = described_class.new(scenario_run:)
       expect(service.path).to eq('clipboard')
     end
   end
@@ -67,7 +68,7 @@ RSpec.describe LookbookVisualTester::ScreenshotTaker do
     end
 
     context 'when path is clipboard' do
-      let(:service) { described_class.new(preview_url, described_class::CLIPBOARD, logger:) }
+      let(:service) { described_class.new(scenario_run:, path: described_class::CLIPBOARD, logger:) }
 
       it 'uses tempfile and copies to clipboard' do
         expect(service).to receive(:print_and_save_to_clipboard)

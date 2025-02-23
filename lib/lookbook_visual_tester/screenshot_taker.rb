@@ -5,12 +5,14 @@ require 'fileutils'
 
 module LookbookVisualTester
   class ScreenshotTaker < Service
-    attr_reader :preview_url, :path, :crop, :logger
+    attr_reader :scenario_run, :path, :crop, :logger
 
     CLIPBOARD = 'clipboard'
 
-    def initialize(preview_url, path = CLIPBOARD, crop: true, logger: Rails.logger)
-      @preview_url = preview_url
+    delegate :preview_url, to: :scenario_run
+
+    def initialize(scenario_run:, path: CLIPBOARD, crop: true, logger: Rails.logger)
+      @scenario_run = scenario_run
       @path = path
       @crop = crop
       @logger = logger

@@ -24,11 +24,11 @@ namespace :lookbook_visual_tester do
   task :copy, [:name] => :environment do |t, args|
     # example on how to run: `rake lookbook_visual_tester:copy["Button"]`
 
-    screenshot_taker = LookbookVisualTester::ScreenshotTaker.new
     previews = Lookbook.previews
 
     scenario_run = LookbookVisualTester::ScenarioFinder.call(args[:name], previews)
     unless scenario_run
+      screenshot_taker = LookbookVisualTester::ScreenshotTaker.new(scenario_run:)
       puts "No Lookbook previews found matching #{args[:name]}"
       exit
     end
@@ -38,7 +38,6 @@ namespace :lookbook_visual_tester do
 
   desc 'Run visual regression tests for Lookbook previews'
   task run: :environment do
-    screenshot_taker = LookbookVisualTester::ScreenshotTaker.new
     image_comparator = LookbookVisualTester::ImageComparator.new
     report = LookbookVisualTester::ReportGenerator.new
 
@@ -57,7 +56,7 @@ namespace :lookbook_visual_tester do
       preview.scenarios.each do |scenario|
         Concurrent::Promises.future_on(pool) do
           scenario_run = LookbookVisualTester::ScenarioRun.new(scenario)
-
+          screenshot_taker = LookbookVisualTester::ScreenshotTaker.new(scenario_run:)
           screenshot_taker.capture(scenario_run.preview_url, scenario_run.current_path)
           puts "    Visiting URL: #{preview_url}"
 

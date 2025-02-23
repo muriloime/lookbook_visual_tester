@@ -43,21 +43,21 @@ module LookbookVisualTester
       file.split('/')[-1].split('.')[0]
     end
 
-    def previews
-      @previews ||= Lookbook.previews.select do |preview|
+    def selected_previews
+      @selected_previews ||= Lookbook.previews.select do |preview|
         selected_changes.any? { |file| preview.file_path.to_s.include?(clean_file_name(file)) }
       end
     end
 
     def process_changes
-      Rails.logger.info "LookbookVisualTester: previews #{previews.count}"
-      previews.each do |preview|
+      Rails.logger.info "LookbookVisualTester: previews #{selected_previews.count}"
+      selected_previews.each do |preview|
         Rails.logger.info "LookbookVisualTester: entering #{preview.inspect}"
 
         preview.scenarios.each do |scenario|
           scenario_run = LookbookVisualTester::ScenarioRun.new(scenario)
           Rails.logger.info "LookbookVisualTester: Processing scenario #{scenario_run.inspect}"
-          LookbookVisualTester::ScreenshotTaker.call(scenario_run)
+          LookbookVisualTester::ScreenshotTaker.call(scenario_run:)
         end
       end
     end
