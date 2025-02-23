@@ -9,8 +9,8 @@ module LookbookVisualTester
       load 'tasks/lookbook_visual_tester.rake'
     end
 
-    initializer 'LookbookVisualTester.lookbook_after_change' do |app1|
-      Rails.logger.info " >>>>> lookbook_after_change initialized: #{app1.inspect}"
+    config.after_initialize do
+      Rails.logger.info "LookbookVisualTester initialized with host: #{LookbookVisualTester.config.lookbook_host}"
       Lookbook.after_change do |app, changes|
         LookbookVisualTester::UpdatePreviews.call(app, changes)
       end

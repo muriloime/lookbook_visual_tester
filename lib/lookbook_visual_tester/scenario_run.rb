@@ -27,6 +27,13 @@ module LookbookVisualTester
       "#{name}.png"
     end
 
+    def timestamp_filename
+      @timestamp_filename ||= begin
+        timestamp = Time.now.strftime('%Y%m%d-%H%M%S')
+        "#{name}_#{timestamp}.png"
+      end
+    end
+
     def diff_filename
       "#{preview_name}_#{scenario_name}_diff.png"
     end
@@ -42,7 +49,7 @@ module LookbookVisualTester
     def preview_url
       Lookbook::Engine.routes.url_helpers.lookbook_preview_url(
         path: preview.lookup_path + '/' + scenario.name,
-        host: LookbookVisualTester.config.host
+        host: LookbookVisualTester.config.lookbook_host
       )
     end
   end

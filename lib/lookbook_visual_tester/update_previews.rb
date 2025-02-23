@@ -1,3 +1,6 @@
+require_relative 'service'
+require_relative 'screenshot_taker'
+
 module LookbookVisualTester
   class UpdatePreviews < Service
     attr_reader :app, :changes
@@ -40,7 +43,7 @@ module LookbookVisualTester
     end
 
     def clean_file_name(file)
-      file.split('/')[-1].split('.')[0]
+      '/' + file.split('/')[-1].split('.')[0]
     end
 
     def selected_previews
@@ -57,7 +60,7 @@ module LookbookVisualTester
         preview.scenarios.each do |scenario|
           scenario_run = LookbookVisualTester::ScenarioRun.new(scenario)
           Rails.logger.info "LookbookVisualTester: Processing scenario #{scenario_run.inspect}"
-          LookbookVisualTester::ScreenshotTaker.call(scenario_run:)
+          LookbookVisualTester::ScreenshotTaker.call(scenario_run:, app:)
         end
       end
     end

@@ -1,7 +1,7 @@
 module LookbookVisualTester
   class Service
-    def self.call(*)
-      new(*).call
+    def self.call(...)
+      new(...).call
     end
 
     def call

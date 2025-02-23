@@ -1,18 +1,22 @@
 require 'spec_helper'
 require 'lookbook_visual_tester/screenshot_taker'
+require 'lookbook_visual_tester/configuration'
 require 'tempfile'
+require 'pathname'
 
 RSpec.describe LookbookVisualTester::ScreenshotTaker do
   let(:preview_url) { 'http://localhost:3000/preview' }
-  let(:scenario_run) { instance_double(LookbookVisualTester::ScenarioRun, preview_url:) }
-  let(:path) { '/tmp/test_screenshot.png' }
+  let(:path) { 'tmp/test_screenshot.png' }
+  let(:scenario_run) { instance_double(LookbookVisualTester::ScenarioRun, preview_url:, filename: 'test_screenshot.png', timestamp_filename: 'test_screenshot_20250201.png') }
   let(:logger) { instance_double(Logger, info: true, puts: true) }
   let(:session) { instance_double(Capybara::Session) }
   let(:session_manager) { instance_double(LookbookVisualTester::SessionManager, session:) }
+  let(:config) { instance_double(LookbookVisualTester::Configuration, base_path: Pathname.new('/tmp/screenshots')) }
   let(:service) { described_class.new(scenario_run:, path:, logger:) }
 
   before do
     allow(LookbookVisualTester::SessionManager).to receive(:instance).and_return(session_manager)
+    allow(LookbookVisualTester::Configuration).to receive(:config).and_return(config)
     allow(session).to receive(:visit)
     allow(session).to receive(:save_screenshot)
     allow(FileUtils).to receive(:mkdir_p)

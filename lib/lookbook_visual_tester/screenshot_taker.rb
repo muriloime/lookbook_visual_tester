@@ -5,17 +5,18 @@ require 'fileutils'
 
 module LookbookVisualTester
   class ScreenshotTaker < Service
-    attr_reader :scenario_run, :path, :crop, :logger
+    attr_reader :scenario_run, :path, :crop, :logger, :app
 
     CLIPBOARD = 'clipboard'
 
     delegate :preview_url, to: :scenario_run
 
-    def initialize(scenario_run:, path: CLIPBOARD, crop: true, logger: Rails.logger)
+    def initialize(scenario_run:, path: nil, crop: true, logger: Rails.logger, app: nil)
       @scenario_run = scenario_run
-      @path = path
+      @path = path || File.join(LookbookVisualTester.config.current_dir, scenario_run.filename)
       @crop = crop
       @logger = logger
+      @app = app
     end
 
     def session
@@ -63,11 +64,33 @@ module LookbookVisualTester
 
     def save_printscreen(path = @path)
       session.save_screenshot(path)
-
-      # remove white space
       system("convert #{path} -trim -bordercolor white -border 10x10 #{path}") if crop
 
-      logger.info "    Screenshot saved to #{path}"
+      if different_from_baseline?(path)
+        save_to_history(path)
+        if app
+          app.data.last_changed_screenshot ||= {}
+          app.data.last_changed_screenshot[scenario_run.preview_name] = history_path
+        end
+      end
+      logger.info "Screenshot saved to #{path}"
     end
+
+    def different_from_baseline?(current_path)
+      baseline_path = File.join(LookbookVisualTester.config.baseline_dir, scenario_run.filename)
+      return true unless File.exist?(baseline_path)
+
+      system("compare -metric AE #{current_path} #{baseline_path} null: 2>&1") != '0'
+    end
+
+    def save_to_history(current_path)
+      @history_path = File.join(
+        LookbookVisualTester.config.history_dir,
+        scenario_run.timestamp_filename
+      )
+      FileUtils.cp(current_path, history_path)
+    end
+
+    attr_reader :history_path
   end
 end
