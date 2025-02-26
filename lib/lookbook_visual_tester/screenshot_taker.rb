@@ -5,18 +5,20 @@ require 'fileutils'
 
 module LookbookVisualTester
   class ScreenshotTaker < Service
-    attr_reader :scenario_run, :path, :crop, :logger, :app
+    attr_reader :scenario_run, :path, :crop, :logger
 
     CLIPBOARD = 'clipboard'
 
     delegate :preview_url, to: :scenario_run
 
-    def initialize(scenario_run:, path: nil, crop: true, logger: Rails.logger, app: nil)
+    def initialize(scenario_run:,
+                   path: nil,
+                   crop: true,
+                   logger: Rails.logger)
       @scenario_run = scenario_run
       @path = path || File.join(LookbookVisualTester.config.current_dir, scenario_run.filename)
       @crop = crop
       @logger = logger
-      @app = app
     end
 
     def session
@@ -58,21 +60,26 @@ module LookbookVisualTester
     def print_and_save_to_clipboard
       Tempfile.create(['screenshot', '.png']) do |file|
         save_printscreen(file.path)
-        save_to_clipboard(file.path)
+        # save_to_clipboard(file.path)
       end
     end
 
     def save_printscreen(path = @path)
       session.save_screenshot(path)
+
       system("convert #{path} -trim -bordercolor white -border 10x10 #{path}") if crop
 
       if different_from_baseline?(path)
+        save_to_clipboard(path) if LookbookVisualTester.config.copy_to_clipboard
+
+        save_to_last_modified(path)
         save_to_history(path)
-        if app
-          app.data.last_changed_screenshot ||= {}
-          app.data.last_changed_screenshot[scenario_run.preview_name] = history_path
-        end
+        LookbookVisualTester.data[:last_changed_screenshot] ||= {}
+        LookbookVisualTester.data[:last_changed_screenshot][scenario_run.preview_name] =
+          history_path
       end
+
+      clean_old_history
       logger.info "Screenshot saved to #{path}"
     end
 
@@ -83,12 +90,27 @@ module LookbookVisualTester
       system("compare -metric AE #{current_path} #{baseline_path} null: 2>&1") != '0'
     end
 
+    def clean_old_history(keep: LookbookVisualTester.config.history_keep_last_n)
+      history_files = Dir.glob(File.join(LookbookVisualTester.config.history_dir,
+                                         "#{scenario_run.preview_name}_*.png"))
+      history_files.sort_by! { |f| File.mtime(f) }
+      history_files[0...-keep].each { |f| File.delete(f) }
+    end
+
     def save_to_history(current_path)
       @history_path = File.join(
         LookbookVisualTester.config.history_dir,
         scenario_run.timestamp_filename
       )
       FileUtils.cp(current_path, history_path)
+    end
+
+    def save_to_last_modified(current_path)
+      last_path = File.join(
+        LookbookVisualTester.config.current_dir,
+        'last.png'
+      )
+      FileUtils.cp(current_path, last_path)
     end
 
     attr_reader :history_path

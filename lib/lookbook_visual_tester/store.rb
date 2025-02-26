@@ -1,15 +1,36 @@
 module LookbookVisualTester
   class Store
-    attr_accessor :last_changed_file, :last_hash
+    attr_accessor :stored_hash
+
+    HASH_KEY = 'lookbook_visual_tester:stored_hash'
 
     def initialize
-      @last_hash = -1
-      @last_changed_file = nil
+      @stored_hash = Rails.cache.read(HASH_KEY) || {}
+    end
+
+    def [](key)
+      @stored_hash[key.to_s]
+    end
+
+    def []=(key, value)
+      save(key.to_s, value)
+    end
+
+    def save(key, value)
+      @stored_hash[key.to_s] = value
+      Rails.cache.write(HASH_KEY, @stored_hash)
+    end
+
+    # pretty inspect of the object
+    def inspect
+      "#<#{self.class.name}
+      stored_hash: #{stored_hash}>"
     end
 
     class << self
       def data
         @data ||= new
+        # @data ||= new
       end
 
       def dataset

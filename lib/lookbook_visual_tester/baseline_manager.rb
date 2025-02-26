@@ -24,7 +24,7 @@ module LookbookVisualTester
     private
 
     def last_screenshot_path
-      app.data.last_changed_screenshot&.[](preview_name)
+      LookbookVisualTester.data[:last_changed_screenshot]&.[](preview_name)
     end
 
     def scenario_path

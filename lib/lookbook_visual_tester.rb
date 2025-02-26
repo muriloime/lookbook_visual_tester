@@ -5,6 +5,7 @@
 require_relative 'lookbook_visual_tester/version'
 require_relative 'lookbook_visual_tester/railtie' if defined?(Rails)
 require 'lookbook_visual_tester/scenario_finder'
+require 'lookbook_visual_tester/store'
 
 module LookbookVisualTester
   class Error < StandardError; end

@@ -1,7 +1,8 @@
 module LookbookVisualTester
   class Configuration
-    attr_accessor :base_path, :lookbook_host, :baseline_dir, :current_dir, :diff_dir, :history_dir,
-                  :threads
+    attr_accessor :base_path, :lookbook_host,
+                  :baseline_dir, :current_dir, :diff_dir, :history_dir,
+                  :history_keep_last_n, :threads, :copy_to_clipboard
 
     DEFAULT_THREADS = 4
 
@@ -19,6 +20,8 @@ module LookbookVisualTester
       @diff_dir = @base_path.join('diff')
       @history_dir = @base_path.join('history')
       @threads = DEFAULT_THREADS
+      @history_keep_last_n = 5
+      @copy_to_clipboard = true
 
       @lookbook_host = ENV.fetch('LOOKBOOK_HOST', 'https://localhost:5000')
     end

@@ -11,7 +11,7 @@ module LookbookVisualTester
       Capybara.register_driver :cuprite do |app|
         Capybara::Cuprite::Driver.new(
           app,
-          window_size: [1400, 1400],
+          window_size: [1200, 800],
           timeout: 20,
           process_timeout: 20,
           headless: true,

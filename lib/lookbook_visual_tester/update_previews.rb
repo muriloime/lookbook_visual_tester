@@ -3,17 +3,16 @@ require_relative 'screenshot_taker'
 
 module LookbookVisualTester
   class UpdatePreviews < Service
-    attr_reader :app, :changes
+    attr_reader :changes
 
-    def initialize(app, changes)
-      @app = app
+    def initialize(changes)
       @changes = changes[:modified]
       @changes_hash = changes
     end
 
     def update_app_data
-      app.data.last_changed_files = changes.presence || []
-      app.data.last_changed_previews = previews
+      LookbookVisualTester.data[:last_changed_files] = changes.presence || []
+      LookbookVisualTester.data[:last_changed_previews] = previews
     end
 
     def call
@@ -60,7 +59,7 @@ module LookbookVisualTester
         preview.scenarios.each do |scenario|
           scenario_run = LookbookVisualTester::ScenarioRun.new(scenario)
           Rails.logger.info "LookbookVisualTester: Processing scenario #{scenario_run.inspect}"
-          LookbookVisualTester::ScreenshotTaker.call(scenario_run:, app:)
+          LookbookVisualTester::ScreenshotTaker.call(scenario_run:)
         end
       end
     end
