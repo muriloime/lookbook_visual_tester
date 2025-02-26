@@ -41,8 +41,15 @@ module LookbookVisualTester
       selected_changes.any?
     end
 
+    def components_folder
+      LookbookVisualTester.config.components_folder
+    end
+
     def clean_file_name(file)
-      '/' + file.split('/')[-1].split('.')[0]
+      file = file.split(components_folder)[-1]
+      # '/' + file.split('/')[-1].split('.')[0]
+      puts ">>>> #{file}"
+      file.split('.')[0].gsub('_preview', '')
     end
 
     def selected_previews

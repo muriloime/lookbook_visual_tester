@@ -2,7 +2,8 @@ module LookbookVisualTester
   class Configuration
     attr_accessor :base_path, :lookbook_host,
                   :baseline_dir, :current_dir, :diff_dir, :history_dir,
-                  :history_keep_last_n, :threads, :copy_to_clipboard
+                  :history_keep_last_n, :threads, :copy_to_clipboard,
+                  :components_folder
 
     DEFAULT_THREADS = 4
 
@@ -22,6 +23,7 @@ module LookbookVisualTester
       @threads = DEFAULT_THREADS
       @history_keep_last_n = 5
       @copy_to_clipboard = true
+      @components_folder = 'app/components'
 
       @lookbook_host = ENV.fetch('LOOKBOOK_HOST', 'https://localhost:5000')
     end
