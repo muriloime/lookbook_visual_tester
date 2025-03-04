@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    lookbook_visual_tester (0.1.5)
+    lookbook_visual_tester (0.1.6)
       capybara
       concurrent-ruby
       cuprite
@@ -141,7 +141,7 @@ GEM
       concurrent-ruby (~> 1.1)
       webrick (~> 1.7)
       websocket-driver (~> 0.7)
-    ffi (1.17.0-x86_64-linux-gnu)
+    ffi (1.17.0)
     fiber-annotation (0.2.0)
     fiber-local (1.1.0)
       fiber-storage
@@ -191,6 +191,7 @@ GEM
     metrics (0.12.1)
     mini_magick (4.13.2)
     mini_mime (1.1.5)
+    mini_portile2 (2.8.8)
     minitest (5.25.1)
     mutex_m (0.2.0)
     net-imap (0.4.17)
@@ -203,7 +204,8 @@ GEM
     net-smtp (0.5.0)
       net-protocol
     nio4r (2.7.4)
-    nokogiri (1.17.2-x86_64-linux)
+    nokogiri (1.17.2)
+      mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     parallel (1.26.3)
     parser (3.3.5.0)
