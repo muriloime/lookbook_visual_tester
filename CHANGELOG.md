@@ -6,6 +6,13 @@ Here is the changelog for version **0.1.5** of *LookbookVisualTester*:
 
 # Changelog
 
+## [0.1.6] - 2025-03-04
+
+### Better search
+
+- better search logic, add components_folder config
+
+
 ## [0.1.5] - 2025-02-26
 
 ### ✨ New Features & Improvements
