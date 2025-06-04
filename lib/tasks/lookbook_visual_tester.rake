@@ -46,11 +46,8 @@ namespace :lookbook_visual_tester do
     # end
 
     # Check if output is being piped
-    if $stdout.isatty # not Piped output (machine readable)
-      # Terminal output (human readable)
-      puts "Images for #{args[:name]}:"
-      # images.each { |image| puts "- #{image}" }
-    end
+    # if $stdout.isatty # not Piped output (not machine readable)
+
     puts scenario_run.current_path
   end
 
