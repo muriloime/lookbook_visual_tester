@@ -21,8 +21,9 @@ namespace :lookbook_visual_tester do
   end
 
   desc "Get list of images for the given component"
-  task :images, [:name] => :environment do |t, args|
+  task :images, [:name, :skip_capture] => :environment do |t, args|
     # example on how to run: `rake lookbook_visual_tester:images["Button"]`
+    args.with_defaults( skip_capture: 'false')
 
     can_print = false # $stdout.isatty
     scenario_run = LookbookVisualTester::ScenarioFinder.call(args[:name])
@@ -36,9 +37,10 @@ namespace :lookbook_visual_tester do
       puts "No Lookbook previews found matching #{args[:name]}"
       exit
     end
-
-    screenshot_taker = LookbookVisualTester::ScreenshotTaker.new(scenario_run:)
-    screenshot_taker.call
+    if args[:skip_capture].in?(['true', '1', 'yes', 1, true])
+      screenshot_taker = LookbookVisualTester::ScreenshotTaker.new(scenario_run:)
+      screenshot_taker.call
+    end
     # images = scenario_run.images
     # if images.empty?
     #   puts "No images found for #{args[:name]}"
