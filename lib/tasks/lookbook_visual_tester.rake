@@ -24,44 +24,47 @@ namespace :lookbook_visual_tester do
   task :images, [:name] => :environment do |t, args|
     # example on how to run: `rake lookbook_visual_tester:images["Button"]`
 
-    previews = Lookbook.previews
+    can_print = $stdout.isatty
+    scenario_run = LookbookVisualTester::ScenarioFinder.call(args[:name])
 
-    scenario_run = LookbookVisualTester::ScenarioFinder.call(args[:name], previews)
+    if can_print
+      puts "Searching for Lookbook previews matching '#{args[:name]}'... "
+      puts Lookbook.previews.map(&:name).join(', ') if Lookbook.previews.any?
+    end
+
     unless scenario_run
       puts "No Lookbook previews found matching #{args[:name]}"
       exit
     end
 
-    images = scenario_run.images
-    if images.empty?
-      puts "No images found for #{args[:name]}"
-      exit 1
-    end
+    screenshot_taker = LookbookVisualTester::ScreenshotTaker.new(scenario_run:)
+    screenshot_taker.call
+    # images = scenario_run.images
+    # if images.empty?
+    #   puts "No images found for #{args[:name]}"
+    #   exit 1
+    # end
 
     # Check if output is being piped
-    if $stdout.isatty
+    if $stdout.isatty # not Piped output (machine readable)
       # Terminal output (human readable)
       puts "Images for #{args[:name]}:"
-      images.each { |image| puts "- #{image}" }
-    else
-      # Piped output (machine readable)
-      puts images.join("\n")
+      # images.each { |image| puts "- #{image}" }
     end
+    puts scenario_run.current_path
   end
 
   desc 'Run and copy to clipboard first scenario matching the given name'
   task :copy, [:name] => :environment do |t, args|
     # example on how to run: `rake lookbook_visual_tester:copy["Button"]`
 
-    previews = Lookbook.previews
-
-    scenario_run = LookbookVisualTester::ScenarioFinder.call(args[:name], previews)
+    scenario_run = LookbookVisualTester::ScenarioFinder.call(args[:name])
     unless scenario_run
       screenshot_taker = LookbookVisualTester::ScreenshotTaker.new(scenario_run:)
       puts "No Lookbook previews found matching #{args[:name]}"
       exit
     end
-    screenshot_taker.capture(scenario_run.preview_url)
+    screenshot_taker.call
     exit
   end
 

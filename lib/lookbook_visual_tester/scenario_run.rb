@@ -8,7 +8,7 @@ module LookbookVisualTester
       @scenario = scenario
       @preview = scenario.preview
 
-      puts "  Scenario: #{scenario_name}"
+      LookbookVisualTester.config.logger.info "  Scenario: #{scenario_name}"
     end
 
     def preview_name

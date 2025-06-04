@@ -4,7 +4,8 @@ module LookbookVisualTester
                   :baseline_dir, :current_dir, :diff_dir, :history_dir,
                   :history_keep_last_n, :threads, :copy_to_clipboard,
                   :components_folder,
-                  :automatic_run
+                  :automatic_run,
+                  :logger
 
     DEFAULT_THREADS = 4
 
@@ -26,8 +27,14 @@ module LookbookVisualTester
       @copy_to_clipboard = true
       @components_folder = 'app/components'
       @automatic_run = ENV.fetch('LOOKBOOK_AUTOMATIC_RUN', false)
+      @logger = if defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
+                  Rails.logger
+                else
+                  require 'logger'
+                  Logger.new($stdout).tap { |l| l.level = Logger::INFO }
+                end
 
-      @lookbook_host = ENV.fetch('LOOKBOOK_HOST', 'https://localhost:5000')
+      @lookbook_host = ENV.fetch('LOOKBOOK_HOST', 'http://localhost:5000')
     end
 
     class << self
