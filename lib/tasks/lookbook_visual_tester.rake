@@ -24,7 +24,7 @@ namespace :lookbook_visual_tester do
   task :images, [:name] => :environment do |t, args|
     # example on how to run: `rake lookbook_visual_tester:images["Button"]`
 
-    can_print = $stdout.isatty
+    can_print = false # $stdout.isatty
     scenario_run = LookbookVisualTester::ScenarioFinder.call(args[:name])
 
     if can_print

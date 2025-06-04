@@ -12,11 +12,15 @@ module LookbookVisualTester
     end
 
     def regex
-      @regex = Regexp.new(search.chars.join('.*'), Regexp::IGNORECASE)
+      @regex = Regexp.new(clean_search.chars.join('.*'), Regexp::IGNORECASE)
     end
 
     def matched_previews
       @matched_previews ||= previews.select { |preview| regex.match?(preview.name.downcase) }
+    end
+
+    def clean_search
+      @clean_search ||= search.downcase.gsub(/[^a-z0-9\s]/, '').strip
     end
 
     def call
@@ -24,7 +28,8 @@ module LookbookVisualTester
 
       previews.each do |preview|
         preview.scenarios.each do |scenario|
-          return ScenarioRun.new(scenario) if scenario.name.downcase.include?(search.downcase)
+          name = "#{preview.name} #{scenario.name}".downcase
+          return ScenarioRun.new(scenario) if regex.match?(name.downcase) #name.downcase.include?(clean_search)
         end
       end
 
