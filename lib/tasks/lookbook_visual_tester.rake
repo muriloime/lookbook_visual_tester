@@ -20,6 +20,35 @@ namespace :lookbook_visual_tester do
     printer.print(STDOUT)
   end
 
+  desc "Get list of images for the given component"
+  task :images, [:name] => :environment do |t, args|
+    # example on how to run: `rake lookbook_visual_tester:images["Button"]`
+
+    previews = Lookbook.previews
+
+    scenario_run = LookbookVisualTester::ScenarioFinder.call(args[:name], previews)
+    unless scenario_run
+      puts "No Lookbook previews found matching #{args[:name]}"
+      exit
+    end
+
+    images = scenario_run.images
+    if images.empty?
+      puts "No images found for #{args[:name]}"
+      exit 1
+    end
+
+    # Check if output is being piped
+    if $stdout.isatty
+      # Terminal output (human readable)
+      puts "Images for #{args[:name]}:"
+      images.each { |image| puts "- #{image}" }
+    else
+      # Piped output (machine readable)
+      puts images.join("\n")
+    end
+  end
+
   desc 'Run and copy to clipboard first scenario matching the given name'
   task :copy, [:name] => :environment do |t, args|
     # example on how to run: `rake lookbook_visual_tester:copy["Button"]`

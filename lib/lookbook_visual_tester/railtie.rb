@@ -12,6 +12,8 @@ module LookbookVisualTester
     initializer 'LookbookVisualTester.lookbook_after_change' do |_app|
       Rails.logger.info "LookbookVisualTester initialized with host: #{LookbookVisualTester.config.lookbook_host}"
       Lookbook.after_change do |app, changes|
+        next unless LookbookVisualTester.automatic_run
+
         # get hash of content of modified files to see if has changed
         modified = changes[:modified]
         my_hash = modified.sort.map { |f| File.read(f) }.hash
