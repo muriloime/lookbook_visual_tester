@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Regression Report</title>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-card: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --danger: #ef4444;
+      --success: #22c55e;
+      --new: #3b82f6;
+      --border: #334155;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      margin: 0;
+      padding: 20px;
+    }
+
+    /* Header & Stats */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+    }
+
+    .stats {
+      display: flex;
+      gap: 15px;
+    }
+
+    .badge {
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    .badge-failed { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+    .badge-passed { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+    .badge-new { background: rgba(59, 130, 246, 0.2); color: var(--new); }
+
+    /* Test Case Card */
+    .test-case {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .test-header {
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0,0,0,0.2);
+    }
+
+    .test-title { font-size: 1.1rem; font-weight: 600; }
+
+    /* Comparison View */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 2px;
+      background: var(--border);
+    }
+
+    .image-col {
+      background: var(--bg-card);
+      padding: 10px;
+      text-align: center;
+    }
+
+    .image-col h4 {
+      color: var(--text-muted);
+      margin: 0 0 10px 0;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .image-col img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid var(--border);
+      display: block; /* Removes bottom spacing */
+    }
+
+    /* Actions */
+    .actions {
+      padding: 15px;
+      text-align: right;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .btn:hover { background: #334155; }
+    
+    .btn-copy {
+      color: var(--new);
+      border-color: var(--new);
+    }
+
+    /* Helper helper */
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Visual Test Report</h1>
+    <div class="stats">
+      <span class="badge badge-failed"><%= @stats[:failed] %> Failed</span>
+      <span class="badge badge-new"><%= @stats[:new] %> New</span>
+      <span class="badge badge-passed"><%= @stats[:passed] %> Passed</span>
+    </div>
+  </div>
+
+  <% @results.each do |result| %>
+    <% next if result.status == :passed # Skip passed tests to reduce noise %>
+    
+    <div class="test-case">
+      <div class="test-header">
+        <span class="test-title">
+          <%= result.scenario_name %>
+          <span class="badge badge-<%= result.status %>"><%= result.status.upcase %></span>
+        </span>
+      </div>
+
+      <div class="comparison-grid">
+        <div class="image-col">
+          <h4>Baseline</h4>
+          <% if result.baseline_path && File.exist?(result.baseline_path) %>
+            <img src="<%= File.expand_path(result.baseline_path, Dir.pwd) %>" alt="Baseline">
+          <% else %>
+            <div style="padding: 40px; color: var(--text-muted);">No Baseline</div>
+          <% end %>
+        </div>
+
+        <div class="image-col">
+          <h4>Diff</h4>
+          <% if result.diff_path && File.exist?(result.diff_path) %>
+            <img src="<%= File.expand_path(result.diff_path, Dir.pwd) %>" alt="Diff">
+          <% else %>
+            <div style="padding: 40px; color: var(--text-muted);">No Diff Available</div>
+          <% end %>
+        </div>
+
+        <div class="image-col">
+          <h4>New / Actual</h4>
+          <% if result.current_path && File.exist?(result.current_path) %>
+            <img src="<%= File.expand_path(result.current_path, Dir.pwd) %>" alt="Actual">
+          <% else %>
+            <div style="padding: 40px; color: var(--text-muted);">No Capture</div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="actions">
+        <input type="hidden" value='<%= approve_command(result) %>' id="cmd-<%= result.object_id %>">
+        
+        <button class="btn btn-copy" onclick="copyCommand('<%= result.object_id %>')">
+          📋 Copy Approval Command
+        </button>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @stats[:failed] == 0 && @stats[:new] == 0 %>
+    <div style="text-align: center; padding: 50px; color: var(--success);">
+      <h2>All clear! ✨</h2>
+      <p>No visual regressions detected.</p>
+    </div>
+  <% end %>
+
+  <script>
+    function copyCommand(id) {
+      const cmd = document.getElementById('cmd-' + id).value;
+      navigator.clipboard.writeText(cmd).then(() => {
+        alert('Command copied! Paste it in your terminal to approve this change.');
+      });
+    }
+  </script>
+</body>
+</html>

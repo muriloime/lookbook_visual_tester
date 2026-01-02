@@ -5,6 +5,7 @@ module LookbookVisualTester
                   :history_keep_last_n, :threads, :copy_to_clipboard,
                   :components_folder,
                   :automatic_run,
+                  :mask_selectors, :driver_adapter,
                   :logger
 
     DEFAULT_THREADS = 4
@@ -27,6 +28,8 @@ module LookbookVisualTester
       @copy_to_clipboard = true
       @components_folder = 'app/components'
       @automatic_run = ENV.fetch('LOOKBOOK_AUTOMATIC_RUN', false)
+      @mask_selectors = []
+      @driver_adapter = :ferrum
       @logger = if defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
                   Rails.logger
                 else

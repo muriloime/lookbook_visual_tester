@@ -18,8 +18,8 @@ gem 'lookbook'
 gem 'rails', '~> 7.0'
 
 group :development, :test do
-  gem 'capybara', '~> 3.35'
-  gem 'cuprite', '~> 0.14'
-  gem 'mini_magick', '~> 4.11'
+  # gem 'capybara', '~> 3.35'
+  # gem 'cuprite', '~> 0.14'
+  # gem 'mini_magick', '~> 4.11'
   gem 'rspec', '~> 3.10'
 end

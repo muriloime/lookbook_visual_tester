@@ -1,6 +1,6 @@
 # lib/lookbook_visual_tester/railtie.rb
 
-require 'lookbook_visual_tester/capybara_setup'
+# require 'lookbook_visual_tester/capybara_setup'
 require 'lookbook_visual_tester/update_previews'
 
 module LookbookVisualTester

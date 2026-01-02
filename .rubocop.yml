@@ -7,7 +7,6 @@ AllCops:
     - "vendor/**/*"
     - "app/assets/**/*"
     - "db/schema.rb"
-  TargetRubyVersion: 3.2.1
   DisplayCopNames: true
   NewCops: enable
 
