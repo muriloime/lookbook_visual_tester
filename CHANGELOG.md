@@ -1,10 +1,17 @@
 # Changelog
 
-Here is the changelog for version **0.1.5** of *LookbookVisualTester*:
+## [0.2.0] - 2026-01-02
 
----
+### ✨ New Features & Improvements
+- **Visual Diff Aesthetics**: Unchanged context in diff images now rendered with a light blue tint for better human readability.
+- **Standalone Test Harness**: Integrated a dummy Rails application within `spec/dummy` for self-contained development and testing.
+- **Full-Flow Integration Tests**: Added RSpec integration tests that boot a local server and verify the entire screenshot/comparison pipeline.
+- **Lookbook 2.x Compatibility**: Added robust support for Lookbook 2.x `scenarios` while maintaining compatibility with 1.x `examples`.
+- **Filename Normalization**: Improved screenshot naming to handle nested preview paths and avoid directory conflicts.
 
-# Changelog
+### Fixed
+- Fixed Ferrum driver compatibility issue with `traffic_factor` argument in `wait_for_idle`.
+- Fixed various unit tests to correctly mock configuration and scenario run state.
 
 ## [0.1.6] - 2025-03-04
 

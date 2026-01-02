@@ -7,11 +7,10 @@ RSpec.describe LookbookVisualTester::UpdatePreviews do
   let(:app) { double('app', data: double('data')) }
   let(:changes) { { modified: modified_files } }
   let(:modified_files) { [] }
-  let(:service) { described_class.new(app, changes) }
+  let(:service) { described_class.new(changes) }
 
   describe '#initialize' do
-    it 'sets app and changes' do
-      expect(service.app).to eq(app)
+    it 'sets changes' do
       expect(service.changes).to eq(modified_files)
     end
   end
@@ -85,15 +84,15 @@ RSpec.describe LookbookVisualTester::UpdatePreviews do
     let(:scenario_run) { double('scenario_run', preview_url: 'url', current_path: 'path') }
 
     before do
+      allow(preview).to receive(:respond_to?).with(:scenarios).and_return(true)
       allow(Lookbook).to receive(:previews).and_return([preview])
       allow(LookbookVisualTester::ScenarioRun).to receive(:new).with(scenario).and_return(scenario_run)
-      allow(LookbookVisualTester::ScreenshotTaker).to receive(:new).and_return(double(call: true))
+      allow(LookbookVisualTester::ScreenshotTaker).to receive(:call)
       allow(Rails.logger).to receive(:info) # Ensure logger.info is stubbed
     end
 
     it 'processes each preview and takes screenshots' do
-      expect(LookbookVisualTester::ScreenshotTaker).to receive(:new)
-      expect_any_instance_of(LookbookVisualTester::ScreenshotTaker).to receive(:call).with('url', 'path')
+      expect(LookbookVisualTester::ScreenshotTaker).to receive(:call).with(scenario_run: scenario_run)
 
       # Verify logging
       expect(Rails.logger).to receive(:info).with("LookbookVisualTester: previews #{[preview].count}")

@@ -2,70 +2,106 @@
 
 # Lookbook Visual Tester
 
-This gem was built to serve as a lookbook regression tester, getting prints from previews, comparing them and generating a report of differences.
+A powerful visual regression testing tool for [ViewComponent](https://viewcomponent.org/) via [Lookbook](https://lookbook.build/). It automates the process of capturing screenshots of your components, comparing them against baselines, and highlighting differences with human-friendly aesthetics.
 
+### Key Features
 
-### Features
-
-- Perform visual regression testing on changes.
-- Integrate seamlessly with your Lookbook previews.
-- Automatically generate image differences.
-- Simplify debugging and quality checks.
-- Very useful for AI coding (e.g. aider, etc.)
+- **Automated Visual Regression**: Captures and compares screenshots of all Lookbook previews.
+- **Intelligent Diffing**: High-quality image comparison using `chunky_png`.
+- **Human-Friendly Aesthetics**: Context is rendered with a light blue tint to make red highlights of differences pop.
+- **Robust Capture**: Automatically disables animations, waits for network idle, and allows masking/cropping.
+- **Lookbook Support**: Compatible with both Lookbook 1.x (`examples`) and 2.x (`scenarios`).
+- **Internal Test Harness**: Includes a dummy Rails app for self-contained testing and development.
 
 ## Installation
 
-Tested on linux. A couple of changes to work on mac, etc. You will need tools like xclip, imagemagick
+### System Dependencies
 
-For Ubuntu-based systems, install the necessary dependencies by running:
+The gem requires `imagemagick` for image processing and `xclip` for clipboard integration (Linux).
 
+For Ubuntu-based systems:
 ```bash
-sudo apt-get install xclip imagemagick
+sudo apt-get install imagemagick xclip
 ```
 
+### Gem Installation
 
-
-Install the gem and add to the application's Gemfile by executing:
-
-```bash
-bundle add lookbook_visual_tester
+Add to your application's Gemfile:
+```ruby
+group :test do
+  gem 'lookbook_visual_tester'
+end
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
-
+Then install:
 ```bash
-gem install lookbook_visual_tester
+bundle install
+```
+
+## Configuration
+
+You can configure the tester in a Rails initializer:
+
+```ruby
+LookbookVisualTester.configure do |config|
+  config.lookbook_host = "http://localhost:3000" # Where your rails app is running
+  config.base_path = "spec/visual_regression"    # Root for screenshots
+  config.copy_to_clipboard = true                # Enable xclip support
+end
 ```
 
 ## Usage
 
-To run everything 
-bundle exec rake lookbook_visual_tester:run LOOKBOOK_HOST=https://localhost:5000
+### Running Visual Tests
 
-### Features 
+Run the rake task to execute the visual regression suite:
 
-When installed this gem gets your changes and generates 
+```bash
+bundle exec rake lookbook_visual_tester:run
+```
 
-## Development
+You can override the host inline:
+```bash
+bundle exec rake lookbook_visual_tester:run LOOKBOOK_HOST=http://localhost:5000
+```
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+### Human-Readable Diffs
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+When a difference is detected, a diff image is generated where:
+- **Neon Red**: Parts of the component that changed.
+- **Blue Tint**: The unchanged context, making it easy to identify where the change occurred.
+
+## Internal Testing (Development)
+
+The project includes an internal dummy Rails application for testing the gem itself.
+
+### Running the Test Suite
+```bash
+bundle exec rspec
+```
+
+### Running the Full Flow Integration Test
+```bash
+bundle exec rspec spec/integration/full_flow_spec.rb
+```
+
+## Next Steps
+
+- **Multi-Viewport Support**: Add ability to capture screenshots at different screen widths (Mobile, Tablet, Desktop).
+- **CI/CD Integration**: Provide recipes for GitHub Actions to run visual regression on PRs.
+- **Reporting Dashboard**: Generate a static HTML report to easily browse all diffs in a single view.
+- **Concurrent Captures**: Optimize execution speed by parallelizing screenshot taking across multiple browser instances.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/muriloime/lookbook_visual_tester. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/[USERNAME]/lookbook_visual_tester/blob/main/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at https://github.com/muriloime/lookbook_visual_tester.
 
+## Deployment
 
-## Deployment 
+To release a new version:
+1. Update the version in `lib/lookbook_visual_tester/version.rb`.
+2. Run `bundle exec rake release`.
 
-Generate artifacts for changelog : 
+## License
 
-`git log --pretty=format:"%h %ad | %s [%an]" --date=short --no-merges --name-only | xclip -selection clipboard`
-
-Update changelog 
-`rake realease`
-
-## Code of Conduct
-
-Everyone interacting in the LookbookVisualTester project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/lookbook_visual_tester/blob/main/CODE_OF_CONDUCT.md).
+The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).

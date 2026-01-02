@@ -19,7 +19,8 @@ module LookbookVisualTester
       puts "Found #{previews.count} previews."
 
       previews.each do |preview|
-        preview.scenarios.each do |scenario|
+        group = preview.respond_to?(:scenarios) ? preview.scenarios : preview.examples
+        group.each do |scenario|
           run_scenario(scenario)
         end
       end

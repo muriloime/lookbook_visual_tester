@@ -8,6 +8,7 @@ RSpec.describe LookbookVisualTester::Runner do
   let(:scenario) { double("Scenario", name: "Default", preview: preview) }
 
   before do
+    allow(preview).to receive(:respond_to?).with(:scenarios).and_return(true)
     allow(preview).to receive(:scenarios).and_return([scenario])
     allow(Lookbook).to receive(:previews).and_return([preview])
     allow(LookbookVisualTester::Drivers::FerrumDriver).to receive(:new).and_return(mock_driver)

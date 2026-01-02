@@ -12,7 +12,7 @@ module LookbookVisualTester
     end
 
     def preview_name
-      preview.name.underscore
+      preview.name.underscore.gsub('/', '_')
     end
 
     def scenario_name

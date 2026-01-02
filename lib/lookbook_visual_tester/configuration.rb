@@ -1,6 +1,7 @@
 module LookbookVisualTester
   class Configuration
-    attr_accessor :base_path, :lookbook_host,
+    attr_reader :base_path
+    attr_accessor :lookbook_host,
                   :baseline_dir, :current_dir, :diff_dir, :history_dir,
                   :history_keep_last_n, :threads, :copy_to_clipboard,
                   :components_folder,
@@ -38,6 +39,14 @@ module LookbookVisualTester
                 end
 
       @lookbook_host = ENV.fetch('LOOKBOOK_HOST', 'http://localhost:5000')
+    end
+
+    def base_path=(value)
+      @base_path = Pathname.new(value)
+      @baseline_dir = @base_path.join('baseline')
+      @current_dir = @base_path.join('current_run')
+      @diff_dir = @base_path.join('diff')
+      @history_dir = @base_path.join('history')
     end
 
     class << self

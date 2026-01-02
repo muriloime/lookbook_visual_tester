@@ -61,7 +61,7 @@ module LookbookVisualTester
 
       def wait_for_network_idle(timeout: 2, duration: 0.5)
         # Ferrum has built-in network idle waiting
-        @browser.network.wait_for_idle(traffic_factor: duration)
+        @browser.network.wait_for_idle
       rescue Ferrum::TimeoutError
         # Log warning but proceed?
       end

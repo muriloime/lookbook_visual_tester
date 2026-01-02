@@ -42,12 +42,10 @@ module LookbookVisualTester
             diff_image[x, y] = DIFF_COLOR
             diff_pixels_count += 1
           else
-            # Grayscale context for unchanged pixels
-            gray = ChunkyPNG::Color.grayscale_teint(pixel1)
-            # Fade it (high alpha means more opaque, low alpha means more transparent in ChunkyPNG?)
-            # ChunkyPNG::Color.fade(color, alpha) -> alpha 0-255 where 255 is opaque.
-            # We want it somewhat visible.
-            diff_image[x, y] = ChunkyPNG::Color.fade(gray, 50)
+            # Blue context for unchanged pixels to make it easier for humans
+            gray_val = ChunkyPNG::Color.r(ChunkyPNG::Color.grayscale_teint(pixel1))
+            # Keep intensity in R/G but push blue to make it the dominant tint
+            diff_image[x, y] = ChunkyPNG::Color.rgba(gray_val, gray_val, 255, 50)
           end
         end
       end

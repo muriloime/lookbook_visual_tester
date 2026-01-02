@@ -63,10 +63,11 @@ module LookbookVisualTester
       selected_previews.each do |preview|
         Rails.logger.info "LookbookVisualTester: entering #{preview.inspect}"
 
-        preview.scenarios.each do |scenario|
+        group = preview.respond_to?(:scenarios) ? preview.scenarios : preview.examples
+        group.each do |scenario|
           scenario_run = LookbookVisualTester::ScenarioRun.new(scenario)
           Rails.logger.info "LookbookVisualTester: Processing scenario #{scenario_run.inspect}"
-          LookbookVisualTester::ScreenshotTaker.call(scenario_run:)
+          LookbookVisualTester::ScreenshotTaker.call(scenario_run: scenario_run)
         end
       end
     end

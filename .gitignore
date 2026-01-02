@@ -13,3 +13,7 @@ tags
 .vscode
 
 .rspec_status
+
+
+log/
+spec/dummy/log
