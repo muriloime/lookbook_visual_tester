@@ -54,16 +54,43 @@ end
 
 ### Running Visual Tests
 
-Run the rake task to execute the visual regression suite:
+The gem provides Rake tasks to execute the visual regression suite.
 
+#### Run All Tests
+Runs all Lookbook previews, generates a terminal summary, and creates an HTML report.
 ```bash
-bundle exec rake lookbook_visual_tester:run
+bundle exec rake lookbook:test
 ```
 
-You can override the host inline:
+#### Test a Specific Preview
+Filter previews by name or label.
 ```bash
-bundle exec rake lookbook_visual_tester:run LOOKBOOK_HOST=http://localhost:5000
+bundle exec rake lookbook:screenshot[Button]
 ```
+
+#### Configuration Overrides
+You can override the host or other settings inline:
+```bash
+LOOKBOOK_HOST=http://localhost:5000 bundle exec rake lookbook:test
+```
+
+### Baseline Management
+
+1. **First Run**: When you run the tests for the first time, all screenshots are saved as **Baselines**.
+2. **Subsequent Runs**: New screenshots are compared against the baselines.
+3. **Mismatches**: If a change is detected, a **Diff** image is generated.
+4. **Approval**: To approve a change (update the baseline), simply copy the file from `current_run` to `baseline`. The HTML report provides a convenient "Copy Approval Command" button for this.
+
+### Reporting
+
+After running `rake lookbook:test`, a detailed HTML report is generated at:
+`coverage/visual_report.html`
+
+The report allows you to:
+- See side-by-side comparisons of Baseline vs. Actual.
+- View the diff highlighting changes in neon red.
+- Quickly copy terminal commands to approve changes.
+
 
 ### Human-Readable Diffs
 
