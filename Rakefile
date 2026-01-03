@@ -10,3 +10,15 @@ require 'rubocop/rake_task'
 RuboCop::RakeTask.new
 
 task default: %i[test rubocop]
+
+namespace :release do
+  desc 'Release with OTP (MFA) support'
+  task :otp do
+    require 'io/console'
+    print 'Enter OTP code: '
+    otp = $stdin.noecho(&:gets).strip
+    puts "\n"
+    ENV['GEM_HOST_OTP_CODE'] = otp
+    Rake::Task['release'].invoke
+  end
+end
