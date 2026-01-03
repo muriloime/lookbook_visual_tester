@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0] - 2026-01-03
+
+### ✨ New Features & Improvements
+- **Concurrent Screenshot Capture**: Speed up your test suite significantly by running screenshot capture in parallel.
+  - Enabled by default with 4 threads.
+  - Configurable via `LOOKBOOK_THREADS` environment variable or Rails configuration.
+- **Configurable Concurrency**: Added `threads` configuration option.
+
 ## [0.2.0] - 2026-01-02
 
 ### ✨ New Features & Improvements

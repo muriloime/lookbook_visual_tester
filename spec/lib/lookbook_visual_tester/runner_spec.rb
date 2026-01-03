@@ -4,8 +4,8 @@ require 'lookbook_visual_tester/runner'
 RSpec.describe LookbookVisualTester::Runner do
   let(:config) { LookbookVisualTester.config }
   let(:mock_driver) { instance_double(LookbookVisualTester::Drivers::FerrumDriver) }
-  let(:preview) { double("Preview", name: "Forms/Input", lookup_path: "forms/input") }
-  let(:scenario) { double("Scenario", name: "Default", preview: preview) }
+  let(:preview) { double('Preview', name: 'Forms/Input', lookup_path: 'forms/input') }
+  let(:scenario) { double('Scenario', name: 'Default', preview: preview) }
 
   before do
     allow(preview).to receive(:respond_to?).with(:scenarios).and_return(true)
@@ -26,28 +26,28 @@ RSpec.describe LookbookVisualTester::Runner do
     allow(FileUtils).to receive(:mkdir_p)
   end
 
-  describe "#run" do
-    it "initializes the driver" do
+  describe '#run' do
+    it 'initializes the driver pool' do
+      expect(LookbookVisualTester::Drivers::FerrumDriver).to receive(:new).with(config).at_least(:once)
       described_class.new
-      expect(LookbookVisualTester::Drivers::FerrumDriver).to have_received(:new).with(config)
     end
 
-    it "visits the preview url" do
+    it 'visits the preview url' do
       runner = described_class.new
       runner.run
 
       # URL construction: forms/input/Default -> verify visit called
-      expect(mock_driver).to have_received(:visit).with(include("forms/input/Default"))
+      expect(mock_driver).to have_received(:visit).with(include('forms/input/Default'))
     end
 
-    it "takes a screenshot" do
+    it 'takes a screenshot' do
       runner = described_class.new
       runner.run
 
-      expect(mock_driver).to have_received(:save_screenshot).with(include("forms_input_default.png"))
+      expect(mock_driver).to have_received(:save_screenshot).with(include('forms_input_default.png'))
     end
 
-    it "compares images" do
+    it 'compares images' do
       comparator_double = double(call: { mismatch: 0.0 })
       allow(LookbookVisualTester::ImageComparator).to receive(:new).and_return(comparator_double)
 
@@ -58,11 +58,11 @@ RSpec.describe LookbookVisualTester::Runner do
       expect(comparator_double).to have_received(:call)
     end
 
-    it "cleans up the driver" do
+    it 'cleans up the driver' do
       runner = described_class.new
       runner.run
 
-      expect(mock_driver).to have_received(:cleanup)
+      expect(mock_driver).to have_received(:cleanup).at_least(:once)
     end
   end
 end

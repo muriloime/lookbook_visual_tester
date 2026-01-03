@@ -47,6 +47,7 @@ LookbookVisualTester.configure do |config|
   config.lookbook_host = "http://localhost:3000" # Where your rails app is running
   config.base_path = "spec/visual_regression"    # Root for screenshots
   config.copy_to_clipboard = true                # Enable xclip support
+  config.threads = 4                             # Number of parallel threads (default: 4)
 end
 ```
 
@@ -71,7 +72,7 @@ bundle exec rake lookbook:screenshot[Button]
 #### Configuration Overrides
 You can override the host or other settings inline:
 ```bash
-LOOKBOOK_HOST=http://localhost:5000 bundle exec rake lookbook:test
+LOOKBOOK_HOST=http://localhost:5000 LOOKBOOK_THREADS=8 bundle exec rake lookbook:test
 ```
 
 ### Baseline Management
@@ -117,7 +118,7 @@ bundle exec rspec spec/integration/full_flow_spec.rb
 - **Multi-Viewport Support**: Add ability to capture screenshots at different screen widths (Mobile, Tablet, Desktop).
 - **CI/CD Integration**: Provide recipes for GitHub Actions to run visual regression on PRs.
 - **Reporting Dashboard**: Generate a static HTML report to easily browse all diffs in a single view.
-- **Concurrent Captures**: Optimize execution speed by parallelizing screenshot taking across multiple browser instances.
+- [x] **Concurrent Captures**: Optimize execution speed by parallelizing screenshot taking across multiple browser instances.
 
 ## Contributing
 

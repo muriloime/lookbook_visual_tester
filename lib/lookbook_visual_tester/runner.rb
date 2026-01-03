@@ -12,7 +12,8 @@ module LookbookVisualTester
     def initialize(config = LookbookVisualTester.config, pattern: nil)
       @config = config
       @pattern = pattern
-      @driver = init_driver
+      @driver_pool = Queue.new
+      init_driver_pool
       @results = []
     end
 
@@ -36,7 +37,7 @@ module LookbookVisualTester
 
       @results
     ensure
-      @driver.cleanup if @driver
+      cleanup_drivers
     end
 
     private
@@ -45,7 +46,12 @@ module LookbookVisualTester
       previews.each do |preview|
         group = preview.respond_to?(:scenarios) ? preview.scenarios : preview.examples
         group.each do |scenario|
-          @results << run_scenario(scenario)
+          driver = checkout_driver
+          begin
+            @results << run_scenario(scenario, driver)
+          ensure
+            return_driver(driver)
+          end
         end
       end
     end
@@ -59,7 +65,12 @@ module LookbookVisualTester
         group = preview.respond_to?(:scenarios) ? preview.scenarios : preview.examples
         group.each do |scenario|
           promises << Concurrent::Promises.future_on(pool) do
-            run_scenario(scenario)
+            driver = checkout_driver
+            begin
+              run_scenario(scenario, driver)
+            ensure
+              return_driver(driver)
+            end
           end
         end
       end
@@ -69,18 +80,42 @@ module LookbookVisualTester
       pool.wait_for_termination
     end
 
-    def init_driver
-      # Currently only Ferrum is supported
-      LookbookVisualTester::Drivers::FerrumDriver.new(@config)
+    def init_driver_pool
+      # Create N drivers where N = threads
+      # If sequential, we only need 1, but we can just simplify and create as many as updated threads config says
+      # Or just 1 if not concurrent?
+      # Actually, let's just stick to @config.threads.
+      # Even for sequential run, if threads was configured to 4, we might create 4 but only use 1.
+      # Optimization: if sequential, only create 1.
+
+      count = @config.threads > 1 ? @config.threads : 1
+      count.times do
+        @driver_pool << LookbookVisualTester::Drivers::FerrumDriver.new(@config)
+      end
     end
 
-    def run_scenario(scenario)
+    def checkout_driver
+      @driver_pool.pop
+    end
+
+    def return_driver(driver)
+      @driver_pool << driver
+    end
+
+    def cleanup_drivers
+      until @driver_pool.empty?
+        driver = @driver_pool.pop
+        driver.cleanup
+      end
+    end
+
+    def run_scenario(scenario, driver)
       run_data = ScenarioRun.new(scenario)
       puts "Running visual test for: #{run_data.name}"
 
       begin
-        @driver.resize_window(1280, 800) # Default or config
-        @driver.visit(run_data.preview_url)
+        driver.resize_window(1280, 800) # Default or config
+        driver.visit(run_data.preview_url)
 
         # Determine paths
         current_path = run_data.current_path
@@ -89,7 +124,7 @@ module LookbookVisualTester
 
         FileUtils.mkdir_p(File.dirname(current_path))
 
-        @driver.save_screenshot(current_path.to_s)
+        driver.save_screenshot(current_path.to_s)
 
         # Trimming (Feature parity with legacy ScreenshotTaker)
         if File.exist?(current_path)

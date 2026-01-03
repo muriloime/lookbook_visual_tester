@@ -24,7 +24,7 @@ module LookbookVisualTester
       @current_dir = @base_path.join('current_run')
       @diff_dir = @base_path.join('diff')
       @history_dir = @base_path.join('history')
-      @threads = DEFAULT_THREADS
+      @threads = ENV.fetch('LOOKBOOK_THREADS', DEFAULT_THREADS).to_i
       @history_keep_last_n = 5
       @copy_to_clipboard = true
       @components_folder = 'app/components'
