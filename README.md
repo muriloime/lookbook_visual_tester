@@ -75,6 +75,35 @@ You can override the host or other settings inline:
 LOOKBOOK_HOST=http://localhost:5000 LOOKBOOK_THREADS=8 bundle exec rake lookbook:test
 ```
 
+#### Screenshot Variants
+
+You can run your visual tests against multiple configurations (variants), such as different themes or viewports, by leveraging Lookbook's `preview_display_options`.
+
+1.  **Define Options in Lookbook**:
+    Ensure your Rails app has display options configured:
+    ```ruby
+    # config/lookbook.rb
+    Lookbook.config.preview_display_options = {
+      theme: ["light", "dark"],
+      width: [["Mobile", "375px"], ["Desktop", "1280px"]]
+    }
+    ```
+
+2.  **Run with Variants**:
+    Use the `VARIANTS` environment variable to define a JSON array of option sets to test.
+
+    *Example: Run standard tests + Dark Mode + Mobile View*
+    ```bash
+    VARIANTS='[{}, {"theme":"dark"}, {"width":"Mobile"}]' bundle exec rake lookbook:test
+    ```
+
+    * **`{}`**: Runs the default/standard preview.
+    * **`{"theme":"dark"}`**: Runs with `_display[theme]=dark`.
+    * **`{"width":"Mobile"}`**: Runs with `_display[width]=375px` AND automatically resizes the browser window to 375px width.
+
+    Screenshots for variants are saved in dedicated subfolders (e.g., `spec/visual_regression/baseline/theme-dark/`).
+
+
 ### Baseline Management
 
 1. **First Run**: When you run the tests for the first time, all screenshots are saved as **Baselines**.
@@ -115,10 +144,7 @@ bundle exec rspec spec/integration/full_flow_spec.rb
 
 ## Next Steps
 
-- **Multi-Viewport Support**: Add ability to capture screenshots at different screen widths (Mobile, Tablet, Desktop).
 - **CI/CD Integration**: Provide recipes for GitHub Actions to run visual regression on PRs.
-- **Reporting Dashboard**: Generate a static HTML report to easily browse all diffs in a single view.
-- [x] **Concurrent Captures**: Optimize execution speed by parallelizing screenshot taking across multiple browser instances.
 
 ## Contributing
 

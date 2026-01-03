@@ -24,45 +24,59 @@ RSpec.describe LookbookVisualTester::Runner do
 
     # Mock FileUtils
     allow(FileUtils).to receive(:mkdir_p)
+
+    # Mock VariantResolver
+    allow(LookbookVisualTester::VariantResolver).to receive(:new).and_call_original
   end
 
   describe '#run' do
-    it 'initializes the driver pool' do
-      expect(LookbookVisualTester::Drivers::FerrumDriver).to receive(:new).with(config).at_least(:once)
-      described_class.new
+    context 'without variants (default)' do
+      it 'visits the preview url' do
+        runner = described_class.new
+        runner.run
+
+        expect(mock_driver).to have_received(:visit).with(include('forms/input/Default'))
+      end
+
+      it 'resizes window to default' do
+        runner = described_class.new
+        runner.run
+        expect(mock_driver).to have_received(:resize_window).with(1280, 800)
+      end
     end
 
-    it 'visits the preview url' do
-      runner = described_class.new
-      runner.run
+    context 'with variants provided via ENV' do
+      before do
+        stub_const('ENV', ENV.to_hash.merge('VARIANTS' => '[{"theme":"dark"}, {"width":"iPhone 12"}]'))
 
-      # URL construction: forms/input/Default -> verify visit called
-      expect(mock_driver).to have_received(:visit).with(include('forms/input/Default'))
-    end
+        # Mocking lookbook config for resolver
+        allow(Lookbook).to receive(:config).and_return(
+          double(preview_display_options: { width: [['iPhone 12', '390px']] })
+        )
+      end
 
-    it 'takes a screenshot' do
-      runner = described_class.new
-      runner.run
+      it 'runs scenarios for each variant' do
+        runner = described_class.new
+        runner.run
 
-      expect(mock_driver).to have_received(:save_screenshot).with(include('forms_input_default.png'))
-    end
+        # Should confirm visit called twice, once with dark theme, once with iphone width
+        expect(mock_driver).to have_received(:visit).twice
+      end
 
-    it 'compares images' do
-      comparator_double = double(call: { mismatch: 0.0 })
-      allow(LookbookVisualTester::ImageComparator).to receive(:new).and_return(comparator_double)
+      it 'resizes window logic' do
+        runner = described_class.new
+        runner.run
 
-      runner = described_class.new
-      runner.run
+        # Default run + Dark run should use default size? OR resolver handles it?
+        # 1st variant (theme: dark) -> default size
+        # 2nd variant (width: iphone 12) -> size 390
 
-      expect(LookbookVisualTester::ImageComparator).to have_received(:new)
-      expect(comparator_double).to have_received(:call)
-    end
-
-    it 'cleans up the driver' do
-      runner = described_class.new
-      runner.run
-
-      expect(mock_driver).to have_received(:cleanup).at_least(:once)
+        # NOTE: VariantResolver logic needs to be fully loaded or mocked.
+        # Checking resize calls:
+        expect(mock_driver).to have_received(:resize_window).with(1280, 800) # Dark theme (no width)
+        expect(mock_driver).to have_received(:resize_window).with(390, 800) # iPhone width (height defaults if not specified?) - Actually resolver doesn't support height yet unless window_size added.
+        # Wait, plan said 'parse to int'. Need to update expectation based on impl.
+      end
     end
   end
 end

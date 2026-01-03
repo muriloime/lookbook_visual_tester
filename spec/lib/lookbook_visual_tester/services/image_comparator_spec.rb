@@ -4,7 +4,7 @@ require 'chunky_png'
 require 'fileutils'
 
 RSpec.describe LookbookVisualTester::ImageComparator do
-  let(:tmp_dir) { "spec/tmp/images" }
+  let(:tmp_dir) { 'spec/tmp/images' }
   let(:baseline_path) { "#{tmp_dir}/baseline.png" }
   let(:current_path) { "#{tmp_dir}/current.png" }
   let(:diff_path) { "#{tmp_dir}/diff.png" }
@@ -22,22 +22,22 @@ RSpec.describe LookbookVisualTester::ImageComparator do
     image.save(path)
   end
 
-  describe "#call" do
-    context "when baseline does not exist" do
-      it "returns error" do
+  describe '#call' do
+    context 'when baseline does not exist' do
+      it 'returns error' do
         comparator = described_class.new(baseline_path, current_path, diff_path)
         result = comparator.call
-        expect(result[:error]).to eq("Baseline not found")
+        expect(result[:error]).to eq('Baseline not found')
       end
     end
 
-    context "when images are identical" do
+    context 'when images are identical' do
       before do
         create_image(baseline_path, ChunkyPNG::Color::WHITE)
         create_image(current_path, ChunkyPNG::Color::WHITE)
       end
 
-      it "returns 0 mismatch and no diff path" do
+      it 'returns 0 mismatch and no diff path' do
         comparator = described_class.new(baseline_path, current_path, diff_path)
         result = comparator.call
         expect(result[:mismatch]).to eq(0.0)
@@ -46,21 +46,21 @@ RSpec.describe LookbookVisualTester::ImageComparator do
       end
     end
 
-    context "when images have different dimensions" do
+    context 'when images have different dimensions' do
       before do
         create_image(baseline_path, ChunkyPNG::Color::WHITE, width: 10, height: 10)
         create_image(current_path, ChunkyPNG::Color::WHITE, width: 20, height: 20)
       end
 
-      it "returns 100% mismatch and error" do
+      it 'returns 100% mismatch and error' do
         comparator = described_class.new(baseline_path, current_path, diff_path)
         result = comparator.call
         expect(result[:mismatch]).to eq(100.0)
-        expect(result[:error]).to include("Dimensions mismatch")
+        expect(result[:error]).to include('Dimensions mismatch')
       end
     end
 
-    context "when images differ" do
+    context 'when images differ' do
       before do
         # Baseline is all white
         create_image(baseline_path, ChunkyPNG::Color::WHITE, width: 10, height: 10)
@@ -71,7 +71,7 @@ RSpec.describe LookbookVisualTester::ImageComparator do
         image.save(current_path)
       end
 
-      it "returns mismatch percentage and saves diff" do
+      it 'returns mismatch percentage and saves diff' do
         comparator = described_class.new(baseline_path, current_path, diff_path)
         result = comparator.call
 

@@ -1,13 +1,13 @@
 require 'spec_helper'
 require 'fileutils'
 
-RSpec.describe "Full Flow Integration" do
-  let(:reference_dir) { Rails.root.join("spec", "lookbook_visual_tester", "reference") }
-  let(:diff_dir) { Rails.root.join("spec", "lookbook_visual_tester", "diffs") }
+RSpec.describe 'Full Flow Integration' do
+  let(:reference_dir) { Rails.root.join('spec', 'lookbook_visual_tester', 'reference') }
+  let(:diff_dir) { Rails.root.join('spec', 'lookbook_visual_tester', 'diffs') }
 
   before do
     # Clean up previous runs
-    FileUtils.rm_rf(Rails.root.join("spec", "lookbook_visual_tester"))
+    FileUtils.rm_rf(Rails.root.join('spec', 'lookbook_visual_tester'))
 
     # Start server
     require 'capybara'
@@ -22,7 +22,7 @@ RSpec.describe "Full Flow Integration" do
     end
   end
 
-  it "runs the visual tester and generates screenshots" do
+  it 'runs the visual tester and generates screenshots' do
     # Initialize the runner
     runner = LookbookVisualTester::Runner.new
 
@@ -33,7 +33,7 @@ RSpec.describe "Full Flow Integration" do
     # Check if screenshots were created
     current_dir = LookbookVisualTester.config.current_dir
 
-    expect(File.exist?(current_dir.join("example_default.png"))).to be true
-    expect(File.exist?(current_dir.join("example_with_long_title.png"))).to be true
+    expect(File.exist?(current_dir.join('example_default.png'))).to be true
+    expect(File.exist?(current_dir.join('example_with_long_title.png'))).to be true
   end
 end

@@ -1,15 +1,14 @@
 # frozen_string_literal: true
 
 require 'bundler/gem_tasks'
-require 'minitest/test_task'
-
-Minitest::TestTask.create
-
+require 'rspec/core/rake_task'
 require 'rubocop/rake_task'
+
+RSpec::Core::RakeTask.new(:spec)
 
 RuboCop::RakeTask.new
 
-task default: %i[test rubocop]
+task default: %i[spec rubocop]
 
 namespace :release do
   desc 'Release with OTP (MFA) support'

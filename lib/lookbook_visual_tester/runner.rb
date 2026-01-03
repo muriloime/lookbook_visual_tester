@@ -1,8 +1,10 @@
 require 'lookbook'
+require 'json'
 require_relative 'configuration'
 require_relative 'scenario_run'
 require_relative 'services/image_comparator'
 require_relative 'drivers/ferrum_driver'
+require_relative 'variant_resolver'
 
 module LookbookVisualTester
   class Runner
@@ -15,6 +17,7 @@ module LookbookVisualTester
       @driver_pool = Queue.new
       init_driver_pool
       @results = []
+      @variants = load_variants
     end
 
     def run
@@ -28,11 +31,21 @@ module LookbookVisualTester
       end
 
       puts "Found #{previews.count} previews matching '#{@pattern}'."
+      puts "Running against #{@variants.size} variant(s)."
 
-      if @config.threads > 1
-        run_concurrently(previews)
-      else
-        run_sequentially(previews)
+      @variants.each do |variant_input|
+        resolver = VariantResolver.new(variant_input)
+        variant_options = resolver.resolve
+        variant_slug = resolver.slug
+        width = resolver.width_in_pixels
+
+        puts "  Variant: #{variant_slug.presence || 'Default'}"
+
+        if @config.threads > 1
+          run_concurrently(previews, variant_slug, variant_options, width)
+        else
+          run_sequentially(previews, variant_slug, variant_options, width)
+        end
       end
 
       @results
@@ -42,13 +55,25 @@ module LookbookVisualTester
 
     private
 
-    def run_sequentially(previews)
+    def load_variants
+      variants_json = ENV['VARIANTS'] || ENV.fetch('LOOKBOOK_VARIANTS', nil)
+      return [{}] if variants_json.blank?
+
+      begin
+        JSON.parse(variants_json)
+      rescue JSON::ParserError
+        puts 'Invalid JSON in VARIANTS env var. Defaulting to standard run.'
+        [{}]
+      end
+    end
+
+    def run_sequentially(previews, variant_slug, variant_options, width)
       previews.each do |preview|
         group = preview.respond_to?(:scenarios) ? preview.scenarios : preview.examples
         group.each do |scenario|
           driver = checkout_driver
           begin
-            @results << run_scenario(scenario, driver)
+            @results << run_scenario(scenario, driver, variant_slug, variant_options, width)
           ensure
             return_driver(driver)
           end
@@ -56,7 +81,7 @@ module LookbookVisualTester
       end
     end
 
-    def run_concurrently(previews)
+    def run_concurrently(previews, variant_slug, variant_options, width)
       require 'concurrent-ruby'
       pool = Concurrent::FixedThreadPool.new(@config.threads)
       promises = []
@@ -67,7 +92,7 @@ module LookbookVisualTester
           promises << Concurrent::Promises.future_on(pool) do
             driver = checkout_driver
             begin
-              run_scenario(scenario, driver)
+              run_scenario(scenario, driver, variant_slug, variant_options, width)
             ensure
               return_driver(driver)
             end
@@ -75,19 +100,14 @@ module LookbookVisualTester
         end
       end
 
-      @results = Concurrent::Promises.zip(*promises).value
+      # Zip results from this concurrent batch into results
+      # Note: This aggregates results per variant loop.
+      @results.concat(Concurrent::Promises.zip(*promises).value)
       pool.shutdown
       pool.wait_for_termination
     end
 
     def init_driver_pool
-      # Create N drivers where N = threads
-      # If sequential, we only need 1, but we can just simplify and create as many as updated threads config says
-      # Or just 1 if not concurrent?
-      # Actually, let's just stick to @config.threads.
-      # Even for sequential run, if threads was configured to 4, we might create 4 but only use 1.
-      # Optimization: if sequential, only create 1.
-
       count = @config.threads > 1 ? @config.threads : 1
       count.times do
         @driver_pool << LookbookVisualTester::Drivers::FerrumDriver.new(@config)
@@ -109,20 +129,32 @@ module LookbookVisualTester
       end
     end
 
-    def run_scenario(scenario, driver)
-      run_data = ScenarioRun.new(scenario)
-      puts "Running visual test for: #{run_data.name}"
+    def run_scenario(scenario, driver, variant_slug, variant_options, width)
+      run_data = ScenarioRun.new(scenario, variant_slug: variant_slug,
+                                           display_params: variant_options)
+      puts "Running visual test for: #{run_data.name} #{variant_slug.present? ? "[#{variant_slug}]" : ''}"
 
       begin
-        driver.resize_window(1280, 800) # Default or config
+        driver_width = width || 1280
+        driver.resize_window(driver_width, 800)
         driver.visit(run_data.preview_url)
 
         # Determine paths
         current_path = run_data.current_path
         baseline_path = run_data.baseline_path
         diff_path = @config.diff_dir.join(run_data.diff_filename)
+        # Update diff path to respect variant structure if needed?
+        # Actually ScenarioRun#diff_filename is just flat for now but let's fix that?
+        # ScenarioRun doesn't expose diff_path with slug. Let's fix that manually here if needed or update ScenarioRun.
+        # Wait, ScenarioRun stores baseline/current in folders but diff_filename is just name.
+        # We should probably put diffs in folders too.
+        # Let's adjust diff_path here:
+        if variant_slug.present?
+          diff_path = @config.diff_dir.join(variant_slug, run_data.diff_filename)
+        end
 
         FileUtils.mkdir_p(File.dirname(current_path))
+        FileUtils.mkdir_p(File.dirname(diff_path))
 
         driver.save_screenshot(current_path.to_s)
 

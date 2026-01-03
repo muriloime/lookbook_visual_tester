@@ -2,13 +2,15 @@ require 'lookbook_visual_tester/configuration'
 
 module LookbookVisualTester
   class ScenarioRun
-    attr_reader :scenario, :preview
+    attr_reader :scenario, :preview, :variant_slug, :display_params
 
-    def initialize(scenario)
+    def initialize(scenario, variant_slug: nil, display_params: {})
       @scenario = scenario
       @preview = scenario.preview
+      @variant_slug = variant_slug
+      @display_params = display_params
 
-      LookbookVisualTester.config.logger.info "  Scenario: #{scenario_name}"
+      LookbookVisualTester.config.logger.info "  Scenario: #{scenario_name} #{variant_suffix}"
     end
 
     def preview_name
@@ -39,18 +41,34 @@ module LookbookVisualTester
     end
 
     def current_path
-      LookbookVisualTester.config.current_dir.join(filename)
+      base = LookbookVisualTester.config.current_dir
+      base = base.join(variant_slug) if variant_slug.present?
+      base.join(filename)
     end
 
     def baseline_path
-      LookbookVisualTester.config.baseline_dir.join(filename)
+      base = LookbookVisualTester.config.baseline_dir
+      base = base.join(variant_slug) if variant_slug.present?
+      base.join(filename)
     end
 
     def preview_url
+      params = { path: preview.lookup_path + '/' + scenario.name }
+
+      if display_params.any?
+        # Transform display_params { theme: 'dark' } -> { _display: { theme: 'dark' } }
+        params[:_display] = display_params
+      end
+
       Lookbook::Engine.routes.url_helpers.lookbook_preview_url(
-        path: preview.lookup_path + '/' + scenario.name,
-        host: LookbookVisualTester.config.lookbook_host
+        params.merge(host: LookbookVisualTester.config.lookbook_host)
       )
+    end
+
+    private
+
+    def variant_suffix
+      variant_slug.present? ? "[#{variant_slug}]" : ''
     end
   end
 end

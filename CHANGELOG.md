@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.0] - 2026-01-03
+
+### ✨ New Features & Improvements
+- **Multiple Screenshot Variants**: Support for defining screenshot variants (e.g., specific viewports, themes) using Lookbook's `preview_display_options`.
+  - Configurable via `VARIANTS` environment variable (JSON array).
+  - Screenshots are saved in subdirectories corresponding to the variant options.
+  - Automatic browser resizing based on `width` options.
+
+### 🧹 Housekeeping
+- **Removed Minitest**: Switched completely to RSpec for internal testing. Deleted unused Minitest files and configuration.
+
 ## [0.3.0] - 2026-01-03
 
 ### ✨ New Features & Improvements
