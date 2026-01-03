@@ -17,3 +17,4 @@ tags
 
 log/
 spec/dummy/log
+spec/dummy/coverage

@@ -64,8 +64,8 @@ module LookbookVisualTester
       work_items = []
       previews.each do |preview|
         # preview is a Lookbook::Preview object which wraps the class
-        # But for checking we might want the class directly or iterate examples
-        examples = preview.examples
+        # But for checking we might want the class directly or iterate scenarios
+        examples = preview.scenarios
         examples.each do |example|
           work_items << { preview: preview, example: example }
         end
