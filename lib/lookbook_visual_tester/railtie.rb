@@ -6,7 +6,8 @@ require 'lookbook_visual_tester/update_previews'
 module LookbookVisualTester
   class Railtie < ::Rails::Railtie
     rake_tasks do
-      load 'tasks/lookbook_visual_tester.rake'
+      path = File.expand_path('../tasks/lookbook_visual_tester.rake', __dir__)
+      load path
     end
 
     initializer 'LookbookVisualTester.lookbook_after_change' do |_app|
