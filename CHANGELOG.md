@@ -1,4 +1,9 @@
 # Changelog
+## [0.5.1] - 2026-01-03
+
+### Fixed
+- **Deprecation Warning**: Replaced usage of `examples` with `scenarios` to resolve Lookbook deprecation warnings.
+
 ## [0.5.0] - 2026-01-03
 
 ### ✨ New Features & Improvements

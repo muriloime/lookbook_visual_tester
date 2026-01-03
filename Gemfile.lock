@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    lookbook_visual_tester (0.5.0)
+    lookbook_visual_tester (0.5.1)
       chunky_png
       concurrent-ruby
       ferrum
