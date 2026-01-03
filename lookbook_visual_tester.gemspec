@@ -36,9 +36,9 @@ Gem::Specification.new do |spec|
 
   # Uncomment to register a new dependency of your gem
 
-  spec.add_dependency 'ferrum'
   spec.add_dependency 'chunky_png'
   spec.add_dependency 'concurrent-ruby'
+  spec.add_dependency 'ferrum'
   spec.add_dependency 'lookbook'
   spec.add_dependency 'rails'
 
@@ -48,5 +48,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_development_dependency 'rspec', '~> 3.10'
+  spec.add_development_dependency 'ruby-prof'
   spec.metadata['rubygems_mfa_required'] = 'true'
 end
