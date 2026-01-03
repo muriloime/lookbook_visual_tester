@@ -1,4 +1,14 @@
 # Changelog
+## [0.5.0] - 2026-01-03
+
+### ✨ New Features & Improvements
+- **Preview Health Checks**: Added new Rake tasks to verify preview integrity:
+    - `lookbook:check`: Rapidly checks if previews load and instantiate without errors.
+    - `lookbook:deep_check`: Verified previews by effectively rendering them to catch runtime and template errors.
+    - `lookbook:missing`: Identifies ViewComponents that lack a corresponding preview.
+- **Parallel Preview Checks**: Health checks run in parallel using `concurrent-ruby`.
+- **Comprehensive Reporting**: Checks generate colored terminal output and a detailed HTML report (`coverage/preview_check_report.html`) including timing stats and slowest previews.
+- **Custom Deep Check Setup**: Added `config.preview_checker_setup` to allow defining mocks (e.g., User, Warden) required for deep checking.
 
 ## [0.4.0] - 2026-01-03
 

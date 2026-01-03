@@ -7,6 +7,7 @@ module LookbookVisualTester
                   :components_folder,
                   :automatic_run,
                   :mask_selectors, :driver_adapter,
+                  :preview_checker_setup,
                   :logger
 
     DEFAULT_THREADS = 4
@@ -31,6 +32,7 @@ module LookbookVisualTester
       @automatic_run = ENV.fetch('LOOKBOOK_AUTOMATIC_RUN', false)
       @mask_selectors = []
       @driver_adapter = :ferrum
+      @preview_checker_setup = nil
       @logger = if defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
                   Rails.logger
                 else

@@ -142,6 +142,28 @@ bundle exec rspec
 bundle exec rspec spec/integration/full_flow_spec.rb
 ```
 
+### Preview Health Checks
+
+The gem provides tasks to ensure your previews are healthy and up-to-date.
+
+#### Check Load/Syntax
+Checks if all previews can be loaded and instantiated without errors.
+```bash
+bundle exec rake lookbook:check
+```
+
+#### Deep Check (Render)
+effectively renders all previews to catch runtime and template errors.
+```bash
+bundle exec rake lookbook:deep_check
+```
+
+#### Find Missing Previews
+Identifies components that don't have a corresponding preview file.
+```bash
+bundle exec rake lookbook:missing
+```
+
 ## Next Steps
 
 - **CI/CD Integration**: Provide recipes for GitHub Actions to run visual regression on PRs.

@@ -3,6 +3,35 @@ require 'lookbook_visual_tester/runner'
 require 'lookbook_visual_tester/report_generator'
 require 'lookbook_visual_tester/json_output_handler'
 
+require 'lookbook_visual_tester/preview_checker'
+require 'lookbook_visual_tester/check_reporter'
+
+namespace :lookbook do
+  desc 'Check previews for load/syntax errors'
+  task check: :environment do
+    puts 'Checking previews...'
+    checker = LookbookVisualTester::PreviewChecker.new
+    results = checker.check
+    LookbookVisualTester::CheckReporter.start([results])
+  end
+
+  desc 'Deep check previews by rendering them'
+  task deep_check: :environment do
+    puts 'Deep checking previews (render)...'
+    checker = LookbookVisualTester::PreviewChecker.new
+    results = checker.deep_check
+    LookbookVisualTester::CheckReporter.start([results])
+  end
+
+  desc 'Find components missing previews'
+  task missing: :environment do
+    puts 'Finding missing previews...'
+    checker = LookbookVisualTester::PreviewChecker.new
+    missing = checker.missing
+    LookbookVisualTester::CheckReporter.report_missing(missing)
+  end
+end
+
 namespace :lookbook do
   desc 'List all available previews'
   task :list, [:format] => :environment do |_, args|

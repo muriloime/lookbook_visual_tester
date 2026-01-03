@@ -7,6 +7,7 @@ PATH
       ferrum
       lookbook
       rails
+      rainbow
 
 GEM
   remote: https://rubygems.org/

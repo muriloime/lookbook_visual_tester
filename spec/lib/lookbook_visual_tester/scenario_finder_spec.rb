@@ -3,7 +3,7 @@ require 'spec_helper'
 RSpec.describe LookbookVisualTester::ScenarioFinder do
   let(:previews) { [] }
   let(:search) { 'button' }
-  let(:finder) { described_class.new(search, previews:) }
+  let(:finder) { described_class.new(search, previews: previews) }
 
   describe '#call' do
     context 'when search is blank' do
