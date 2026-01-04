@@ -131,13 +131,21 @@ module LookbookVisualTester
       example_name = example.name
 
       begin
-        preview_instance = preview_class.new
-        unless preview_instance.respond_to?(example_name)
-          return CheckResult.new(preview_name: preview.name, example_name: example_name,
-                                 status: :passed)
+        # Use ViewComponent::Preview logic to get the component to render
+        # This handles the case where the method returns nil (implicit template)
+        # and returns a component that renders the template.
+        if preview_class.respond_to?(:preview_example)
+          result = preview_class.preview_example(example_name)
+          puts "DEBUG: preview_example('#{example_name}') returned: #{result.inspect} (class: #{result.class})"
+        else
+          # Fallback for older VC or non-standard setups
+          preview_instance = preview_class.new
+          unless preview_instance.respond_to?(example_name)
+            return CheckResult.new(preview_name: preview.name, example_name: example_name,
+                                   status: :passed)
+          end
+          result = preview_instance.public_send(example_name)
         end
-
-        result = preview_instance.public_send(example_name)
 
         if result.respond_to?(:render_in)
           # Mock current_user/pundit if needed on the component itself if possible
@@ -157,6 +165,36 @@ module LookbookVisualTester
           result.render_in(view_context)
         elsif result.is_a?(String)
           # Rendered string, good.
+        elsif result.nil?
+          # If result is nil, it implies an implicit template rendering.
+          # We need to verify that the template exists.
+
+          # Try to find the template file based on conventions
+          # Convention: preview_file_dir/preview_file_name/example_name.html.erb
+
+          # We need the preview file path. Lookbook::Preview might not expose it easily
+          # but the class might have source_location.
+
+          method = preview_class.instance_method(example_name)
+          source_file = method.source_location&.first
+
+          found_template = false
+          if source_file
+            dir = File.dirname(source_file)
+            filename = File.basename(source_file, '.rb')
+            template_dir = File.join(dir, filename)
+
+            extensions = ['.html.erb', '.html.haml', '.html.slim']
+            path = File.join(template_dir, "#{example_name}")
+
+            found_template = extensions.any? { |ext| File.exist?("#{path}#{ext}") }
+          end
+
+          unless found_template
+            raise ViewComponent::MissingPreviewTemplateError.new("Preview #{example_name} returned nil and no template found at #{path}.* (checked erb, haml, slim)") if defined?(ViewComponent::MissingPreviewTemplateError)
+
+            raise "Preview returned nil and no template found at #{path}.*"
+          end
         end
 
         CheckResult.new(preview_name: preview.name, example_name: example_name, status: :passed)

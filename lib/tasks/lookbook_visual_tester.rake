@@ -21,6 +21,7 @@ namespace :lookbook do
     checker = LookbookVisualTester::PreviewChecker.new
     results = checker.deep_check
     LookbookVisualTester::CheckReporter.start([results])
+    exit 1 if results.any? { |r| r.status == :failed }
   end
 
   desc 'Find components missing previews'

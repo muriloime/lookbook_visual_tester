@@ -29,7 +29,7 @@ sudo apt-get install imagemagick xclip
 Add to your application's Gemfile:
 ```ruby
 group :test do
-  gem 'lookbook_visual_tester'
+  gem 'lookbook_visual_tester', '~> 0.5.3'
 end
 ```
 
@@ -153,7 +153,7 @@ bundle exec rake lookbook:check
 ```
 
 #### Deep Check (Render)
-effectively renders all previews to catch runtime and template errors.
+effectively renders all previews to catch runtime errors, missing templates, and other failures. Exits with status 1 if any errors are found.
 ```bash
 bundle exec rake lookbook:deep_check
 ```

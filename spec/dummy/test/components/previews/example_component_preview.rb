@@ -6,4 +6,7 @@ class ExampleComponentPreview < ViewComponent::Preview
   def with_long_title
     render(ExampleComponent.new(title: 'This is a much longer title for the component'))
   end
+
+  def icons
+  end
 end

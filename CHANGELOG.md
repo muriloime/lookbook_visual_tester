@@ -1,4 +1,10 @@
 # Changelog
+## [0.5.3] - 2026-01-04
+
+### Fixed
+- **Deep Check**: `rake lookbook:deep_check` now correctly detects and fails when a preview returns `nil` (implicit rendering) but the corresponding template is missing (`ViewComponent::MissingPreviewTemplateError`).
+- **Deep Check**: `rake lookbook:deep_check` now exits with status 1 if any errors or failures are detected.
+
 ## [0.5.2] - 2026-01-04
 
 ### Fixed

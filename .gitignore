@@ -18,3 +18,5 @@ tags
 log/
 spec/dummy/log
 spec/dummy/coverage
+spec/dummy/spec/visual_screenshots/
+spec/dummy/spec/lookbook_visual_tester/
