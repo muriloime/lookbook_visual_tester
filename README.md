@@ -166,7 +166,13 @@ bundle exec rake lookbook:missing
 
 ## Next Steps
 
-- **CI/CD Integration**: Provide recipes for GitHub Actions to run visual regression on PRs.
+- **Enhanced Approval Workflow**: Implement a `rake lookbook:approve` task (and potentially an interactive mode) to verify and promote changes to baselines without manual file operations.
+- **Tolerance Configuration**: Add support for configuring pixel mismatch tolerance levels to reduce flakiness in rendering (anti-aliasing, shadow rendering differences).
+- **Ignore Regions**: Allow defining specific areas of a component to exclude from visual comparison (useful for unavoidable dynamic content).
+- **Markdown Reports**: Generate markdown summaries of test runs suitable for posting automatically as Pull Request comments.
+- **Cloud Storage**: Integration with cloud storage (S3, GCS) for managing baseline images to keep the git repository light.
+- **CI/CD Blueprints**: Detailed guides and reusable actions/steps for integrating with GitHub Actions, GitLab CI, etc.
+- **Multiple Browsers**: Expand driver support beyond Chrome/Ferrum (e.g. Firefox, Safari/Webkit) for cross-browser visual testing.
 
 ## Contributing
 
