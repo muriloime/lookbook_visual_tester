@@ -36,6 +36,7 @@ Gem::Specification.new do |spec|
 
   # Uncomment to register a new dependency of your gem
 
+  spec.add_dependency 'benchmark'
   spec.add_dependency 'chunky_png'
   spec.add_dependency 'concurrent-ruby'
   spec.add_dependency 'ferrum'
