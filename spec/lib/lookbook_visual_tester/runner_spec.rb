@@ -45,6 +45,30 @@ RSpec.describe LookbookVisualTester::Runner do
       end
     end
 
+    context 'when baseline is missing' do
+      before do
+        allow(LookbookVisualTester::ImageComparator).to receive(:new).and_return(
+          double(call: { error: 'Baseline not found', mismatch: 0.0 })
+        )
+        allow(FileUtils).to receive(:cp)
+      end
+
+      it 'creates the baseline directory and copies the current image' do
+        runner = described_class.new
+        runner.run
+
+        expect(FileUtils).to have_received(:mkdir_p).with(String).at_least(:once)
+        expect(FileUtils).to have_received(:cp).with(Pathname, Pathname)
+      end
+
+      it 'returns a result with status :new' do
+        runner = described_class.new
+        results = runner.run
+
+        expect(results.first.status).to eq(:new)
+      end
+    end
+
     context 'with variants provided via ENV' do
       before do
         stub_const('ENV', ENV.to_hash.merge('VARIANTS' => '[{"theme":"dark"}, {"width":"iPhone 12"}]'))

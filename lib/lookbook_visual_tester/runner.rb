@@ -179,6 +179,8 @@ module LookbookVisualTester
           if result[:error] == 'Baseline not found'
             # First run, maybe auto-approve or just report
             puts '  [NEW] Baseline not found. Saved current as potential baseline.'
+            FileUtils.mkdir_p(File.dirname(baseline_path))
+            FileUtils.cp(current_path, baseline_path)
             status = :new
           else
             puts "  [ERROR] #{result[:error]}"
