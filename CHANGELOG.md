@@ -1,4 +1,9 @@
 # Changelog
+## [0.5.2] - 2026-01-04
+
+### Fixed
+- **Preview Checker**: Fixed a `NoMethodError` crash in `PreviewChecker` when encountering template-only Lookbook scenarios (scenarios without a corresponding method in the preview class).
+
 ## [0.5.1] - 2026-01-03
 
 ### Fixed

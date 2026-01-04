@@ -111,6 +111,11 @@ module LookbookVisualTester
 
       begin
         preview_instance = preview_class.new
+        unless preview_instance.respond_to?(example_name)
+          return CheckResult.new(preview_name: preview.name, example_name: example_name,
+                                 status: :passed)
+        end
+
         preview_instance.public_send(example_name)
 
         # We don't render, just verify we can call it.
@@ -127,6 +132,11 @@ module LookbookVisualTester
 
       begin
         preview_instance = preview_class.new
+        unless preview_instance.respond_to?(example_name)
+          return CheckResult.new(preview_name: preview.name, example_name: example_name,
+                                 status: :passed)
+        end
+
         result = preview_instance.public_send(example_name)
 
         if result.respond_to?(:render_in)
