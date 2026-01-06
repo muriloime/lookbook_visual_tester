@@ -33,6 +33,7 @@ module Dummy
     # config.eager_load_paths << Rails.root.join("extras")
 
     config.view_component.preview_paths = [Rails.root.join('test/components/previews')]
+    config.view_component.preview_controller = 'PreviewController'
     config.lookbook.project_name = 'Visual Tester Dummy'
   end
 end

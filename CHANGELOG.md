@@ -1,4 +1,16 @@
 # Changelog
+## [0.5.6] - 2026-01-06
+
+### Fixed
+- **Image Comparison**: Fixed `Dimensions mismatch` error by creating a diff canvas sized to the maximum dimensions of widely differing images.
+- **Missing Action Error**: Resolved `ActionNotFound` for `render_scenario_to_string` by ensuring the preview controller properly includes `Lookbook::PreviewControllerActions`.
+- **Unexpected Headers**: Fixed an issue where the `example_icons` preview in the dummy app included an unwanted `<h1>Icons</h1>` header.
+- **Spec Fix**: Resolved a `SystemStackError` (circular dependency) in `ScenarioFinder` specs.
+
+### Changed
+- **Folder Structure**: Refactored screenshot organization. Non-variant screenshots are now stored in a `default` subfolder within `coverage/screenshots`.
+- **Deep Check**: Enhanced `rake lookbook:deep_check` to validate that the configured preview controller supports required Lookbook actions.
+
 ## [0.5.5] - 2026-01-06
 
 ### Fixed

@@ -18,6 +18,7 @@ module LookbookVisualTester
     def deep_check
       # Ensure custom setup is run before deep checks
       run_setup
+      check_preview_controller_config
       run_checks(:deep_render_check)
     end
 
@@ -201,6 +202,27 @@ module LookbookVisualTester
       rescue StandardError => e
         CheckResult.new(preview_name: preview.name, example_name: example_name, status: :failed,
                         error: e.message, backtrace: e.backtrace)
+      end
+    end
+
+    def check_preview_controller_config
+      return unless defined?(Rails)
+
+      controller_name = Rails.application.config.view_component.preview_controller
+      return unless controller_name
+
+      begin
+        controller_class = controller_name.constantize
+        unless controller_class.action_methods.include?('render_scenario_to_string')
+          puts "WARNING: Configured preview controller '#{controller_name}' does not have 'render_scenario_to_string' action."
+          puts '         This is required for Lookbook to render previews correctly.'
+          puts "         Please ensure your preview controller inherits from 'Lookbook::PreviewController'."
+          # We could raise an error here to fail deep_check
+          raise "Preview Controller '#{controller_name}' missing required action 'render_scenario_to_string'"
+        end
+      rescue NameError
+        puts "WARNING: Configured preview controller '#{controller_name}' could not be loaded."
+        raise "Preview Controller '#{controller_name}' could not be loaded"
       end
     end
 
