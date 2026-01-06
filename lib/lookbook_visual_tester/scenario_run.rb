@@ -57,7 +57,7 @@ module LookbookVisualTester
 
       if display_params.any?
         # Transform display_params { theme: 'dark' } -> { _display: { theme: 'dark' } }
-        params[:_display] = display_params
+        params[:_display] = display_params.to_json
       end
 
       Lookbook::Engine.routes.url_helpers.lookbook_preview_url(

@@ -1,5 +1,8 @@
 # Changelog
-## [0.5.3] - 2026-01-04
+## [0.5.4] - 2026-01-06
+
+### Fixed
+- **Variants URL Generation**: Fixed a bug where setting `VARIANTS` caused a `JSON::ParserError` in Lookbook. Variant parameters are now correctly serialized to JSON in the preview URL.
 
 ### Fixed
 - **Deep Check**: `rake lookbook:deep_check` now correctly detects and fails when a preview returns `nil` (implicit rendering) but the corresponding template is missing (`ViewComponent::MissingPreviewTemplateError`).

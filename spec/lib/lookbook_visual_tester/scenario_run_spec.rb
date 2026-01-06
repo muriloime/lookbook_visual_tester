@@ -61,8 +61,8 @@ RSpec.describe LookbookVisualTester::ScenarioRun do
 
       it 'includes display params in url' do
         url = subject.preview_url
-        expect(url).to include('_display%5Btheme%5D=dark') # _display[theme]=dark
-        expect(url).to include('_display%5Bwidth%5D=375px')
+        expect(url).to include('_display=%7B%22theme%22%3A%22dark%22') # _display={"theme":"dark"}
+        expect(url).to include('%2C%22width%22%3A%22375px%22%7D') # ,"width":"375px"}
       end
     end
   end

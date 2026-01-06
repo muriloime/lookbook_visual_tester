@@ -28,8 +28,8 @@ sudo apt-get install imagemagick xclip
 
 Add to your application's Gemfile:
 ```ruby
-group :test do
-  gem 'lookbook_visual_tester', '~> 0.5.3'
+group :test, :development do
+  gem 'lookbook_visual_tester', '~> 0.5.4'
 end
 ```
 
