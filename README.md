@@ -45,7 +45,7 @@ You can configure the tester in a Rails initializer:
 ```ruby
 LookbookVisualTester.configure do |config|
   config.lookbook_host = "http://localhost:3000" # Where your rails app is running
-  config.base_path = "spec/visual_regression"    # Root for screenshots
+  config.base_path = "coverage/screenshots"    # Root for screenshots
   config.copy_to_clipboard = true                # Enable xclip support
   config.threads = 4                             # Number of parallel threads (default: 4)
 end
@@ -101,7 +101,7 @@ You can run your visual tests against multiple configurations (variants), such a
     * **`{"theme":"dark"}`**: Runs with `_display[theme]=dark`.
     * **`{"width":"Mobile"}`**: Runs with `_display[width]=375px` AND automatically resizes the browser window to 375px width.
 
-    Screenshots for variants are saved in dedicated subfolders (e.g., `spec/visual_regression/baseline/theme-dark/`).
+    Screenshots for variants are saved in dedicated subfolders (e.g., `coverage/screenshots/baseline/theme-dark/`).
 
 
 ### Baseline Management

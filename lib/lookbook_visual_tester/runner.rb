@@ -142,16 +142,8 @@ module LookbookVisualTester
         # Determine paths
         current_path = run_data.current_path
         baseline_path = run_data.baseline_path
-        diff_path = @config.diff_dir.join(run_data.diff_filename)
-        # Update diff path to respect variant structure if needed?
-        # Actually ScenarioRun#diff_filename is just flat for now but let's fix that?
-        # ScenarioRun doesn't expose diff_path with slug. Let's fix that manually here if needed or update ScenarioRun.
-        # Wait, ScenarioRun stores baseline/current in folders but diff_filename is just name.
-        # We should probably put diffs in folders too.
-        # Let's adjust diff_path here:
-        if variant_slug.present?
-          diff_path = @config.diff_dir.join(variant_slug, run_data.diff_filename)
-        end
+        folder_name = variant_slug.presence || 'default'
+        diff_path = @config.diff_dir.join(folder_name, run_data.diff_filename)
 
         FileUtils.mkdir_p(File.dirname(current_path))
         FileUtils.mkdir_p(File.dirname(diff_path))

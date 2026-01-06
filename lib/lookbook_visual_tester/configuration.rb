@@ -14,12 +14,12 @@ module LookbookVisualTester
 
     def initialize
       @base_path = if defined?(Rails) && Rails.respond_to?(:env) && Rails.env.test?
-                     Pathname.new(Dir.pwd).join('spec/visual_screenshots')
+                     Pathname.new(Dir.pwd).join('coverage/screenshots')
                    elsif defined?(Rails) && Rails.respond_to?(:root) && Rails.root
-                     Rails.root.join('spec/visual_screenshots')
+                     Rails.root.join('coverage/screenshots')
                    else
                      # Fallback for non-Rails environments
-                     Pathname.new(Dir.pwd).join('spec/visual_screenshots')
+                     Pathname.new(Dir.pwd).join('coverage/screenshots')
                    end
       @baseline_dir = @base_path.join('baseline')
       @current_dir = @base_path.join('current_run')

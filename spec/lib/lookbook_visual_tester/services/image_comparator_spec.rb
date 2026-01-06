@@ -52,11 +52,15 @@ RSpec.describe LookbookVisualTester::ImageComparator do
         create_image(current_path, ChunkyPNG::Color::WHITE, width: 20, height: 20)
       end
 
-      it 'returns 100% mismatch and error' do
+      it 'returns mismatch percentage and nil error' do
         comparator = described_class.new(baseline_path, current_path, diff_path)
         result = comparator.call
-        expect(result[:mismatch]).to eq(100.0)
-        expect(result[:error]).to include('Dimensions mismatch')
+
+        # Max area = 20*20 = 400. Mismatch area = 400 - 100 = 300. Mismatch % = 75.0
+        expect(result[:mismatch]).to eq(75.0)
+        expect(result[:error]).to be_nil
+        expect(result[:diff_path]).to eq(diff_path)
+        expect(File.exist?(diff_path)).to be true
       end
     end
 

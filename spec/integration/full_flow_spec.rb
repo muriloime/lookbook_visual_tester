@@ -33,7 +33,7 @@ RSpec.describe 'Full Flow Integration' do
     # Check if screenshots were created
     current_dir = LookbookVisualTester.config.current_dir
 
-    expect(File.exist?(current_dir.join('example_default.png'))).to be true
-    expect(File.exist?(current_dir.join('example_with_long_title.png'))).to be true
+    expect(File.exist?(current_dir.join('default', 'example_default.png'))).to be true
+    expect(File.exist?(current_dir.join('default', 'example_with_long_title.png'))).to be true
   end
 end

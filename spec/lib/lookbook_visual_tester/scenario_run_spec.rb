@@ -31,9 +31,9 @@ RSpec.describe LookbookVisualTester::ScenarioRun do
     context 'without variant' do
       subject { described_class.new(scenario) }
 
-      it 'uses root directories' do
-        expect(subject.baseline_path.to_s).to eq('/tmp/baseline/forms_input_default.png')
-        expect(subject.current_path.to_s).to eq('/tmp/current/forms_input_default.png')
+      it 'uses default subdirectory' do
+        expect(subject.baseline_path.to_s).to eq('/tmp/baseline/default/forms_input_default.png')
+        expect(subject.current_path.to_s).to eq('/tmp/current/default/forms_input_default.png')
       end
     end
 

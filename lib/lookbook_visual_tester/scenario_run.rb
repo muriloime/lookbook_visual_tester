@@ -40,16 +40,16 @@ module LookbookVisualTester
       "#{preview_name}_#{scenario_name}_diff.png"
     end
 
+    def folder_name
+      variant_slug.presence || 'default'
+    end
+
     def current_path
-      base = LookbookVisualTester.config.current_dir
-      base = base.join(variant_slug) if variant_slug.present?
-      base.join(filename)
+      LookbookVisualTester.config.current_dir.join(folder_name).join(filename)
     end
 
     def baseline_path
-      base = LookbookVisualTester.config.baseline_dir
-      base = base.join(variant_slug) if variant_slug.present?
-      base.join(filename)
+      LookbookVisualTester.config.baseline_dir.join(folder_name).join(filename)
     end
 
     def preview_url

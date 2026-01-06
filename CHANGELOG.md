@@ -1,4 +1,13 @@
 # Changelog
+## [0.5.5] - 2026-01-06
+
+### Fixed
+- **Image Comparison**: Fixed `Dimensions mismatch` error. Now, when images have different dimensions, a diff image is generated on a canvas sized to the maximum dimensions, clearly showing the differences and the mismatched areas.
+
+### Changed
+- **Folder Structure**: Screenshots are now saved in `coverage/screenshots` by default (previously `spec/visual_screenshots`).
+- **Default Subfolder**: Non-variant screenshots are now stored in a `default` subfolder to maintain consistency with variant-based runs.
+
 ## [0.5.4] - 2026-01-06
 
 ### Fixed
