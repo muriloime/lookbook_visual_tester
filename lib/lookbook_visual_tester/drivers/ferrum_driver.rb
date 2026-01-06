@@ -53,22 +53,26 @@ module LookbookVisualTester
         wait_for_network_idle
         wait_for_fonts
         wait_for_custom_selectors
+        # Explicit wait if configured, for robustness against "blank screenshot" issues
+        sleep(config.wait_time) if config.wait_time.positive?
       end
 
       def wait_for_fonts
-        @browser.execute("return document.fonts.ready")
+        @browser.execute('return document.fonts.ready')
       end
 
-      def wait_for_network_idle(timeout: 2, duration: 0.5)
-        # Ferrum has built-in network idle waiting
+      def wait_for_network_idle
+        # Ferrum has built-in network idle waiting.
+        # We rely on default settings or explicit sleep for extra safety.
         @browser.network.wait_for_idle
       rescue Ferrum::TimeoutError
-        # Log warning but proceed?
+        # Log warning but proceed - sometimes long polling or other scripts keep net active
+        config.logger.warn 'LookbookVisualTester: Network idle timeout. Proceeding with screenshot.'
       end
 
       def save_screenshot(path)
         @browser.screenshot(path: path, full: true)
-        # Note: full: true captures the whole page.
+        # NOTE: full: true captures the whole page.
         # If we capture viewport only, we should remove full: true.
         # Usually for visual testing full page is better unless specifically testing viewport.
       end
@@ -86,7 +90,7 @@ module LookbookVisualTester
       end
 
       def disable_animations
-        css = "* { transition: none !important; animation: none !important; caret-color: transparent !important; }"
+        css = '* { transition: none !important; animation: none !important; caret-color: transparent !important; }'
         inject_style(css)
       end
 
@@ -95,15 +99,17 @@ module LookbookVisualTester
         start = Time.now
         until @browser.execute("return document.fonts.status === 'loaded'")
           break if Time.now - start > 5
+
           sleep 0.1
         end
 
         # Also check for images loading attributes if needed
         # "check that no images have loading attributes active"
         # Often checking complete property is enough
-        until @browser.execute("return Array.from(document.images).every(i => i.complete)")
-           break if Time.now - start > 5
-           sleep 0.1
+        until @browser.execute('return Array.from(document.images).every(i => i.complete)')
+          break if Time.now - start > 5
+
+          sleep 0.1
         end
       end
     end

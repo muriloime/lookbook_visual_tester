@@ -4,6 +4,8 @@
 
 A powerful visual regression testing tool for [ViewComponent](https://viewcomponent.org/) via [Lookbook](https://lookbook.build/). It automates the process of capturing screenshots of your components, comparing them against baselines, and highlighting differences with human-friendly aesthetics.
 
+*This tool has been tested "at home". If it doesn't work for you, feel free to open an issue. **It works on my machine!***
+
 ### Key Features
 
 - **Automated Visual Regression**: Captures and compares screenshots of all Lookbook previews.
@@ -48,6 +50,7 @@ LookbookVisualTester.configure do |config|
   config.base_path = "coverage/screenshots"    # Root for screenshots
   config.copy_to_clipboard = true                # Enable xclip support
   config.threads = 4                             # Number of parallel threads (default: 4)
+  config.wait_time = 0.5                         # Optional: Wait time (seconds) before screenshot (fixes blank screens)
 end
 ```
 

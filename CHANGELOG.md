@@ -1,4 +1,10 @@
 # Changelog
+## [0.5.7] - 2026-01-06
+
+### Fixed
+- **Flaky Screenshots**: Added `wait_time` configuration to `LookbookVisualTester.config` to allow explicit waiting before screenshot capture. This resolves blank or layout-only screenshots in slower environments.
+- **Robust Driver**: Updated `FerrumDriver` to include consistent network idle checks and support the new `wait_time` option.
+
 ## [0.5.6] - 2026-01-06
 
 ### Fixed
