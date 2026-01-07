@@ -5,6 +5,7 @@ PATH
       benchmark
       chunky_png
       concurrent-ruby
+      cuprite
       ferrum
       lookbook
       rails
