@@ -39,6 +39,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'benchmark'
   spec.add_dependency 'chunky_png'
   spec.add_dependency 'concurrent-ruby'
+  spec.add_dependency 'cuprite'
   spec.add_dependency 'ferrum'
   spec.add_dependency 'lookbook'
   spec.add_dependency 'rails'
