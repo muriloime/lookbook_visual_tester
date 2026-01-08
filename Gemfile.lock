@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    lookbook_visual_tester (0.5.7)
+    lookbook_visual_tester (0.5.8)
       benchmark
       chunky_png
       concurrent-ruby

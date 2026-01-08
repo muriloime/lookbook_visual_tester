@@ -1,4 +1,11 @@
 # Changelog
+## [0.5.8] - 2026-01-08
+
+### ✨ New Features & Improvements
+- **AI-Native Inspection Tools**: Added `lookbook:inspect` and `lookbook:context` Rake tasks to assist AI agents in understanding preview structure and code context.
+- **Debug Artifacts**: Automatically save HTML DOM snapshots alongside failed visual regression tests for easier debugging.
+- **Visual Tolerance**: Added `tolerance` configuration option and fuzzy matching (Euclidean distance) to `ImageComparator` to reduce flakiness.
+
 ## [0.5.7] - 2026-01-06
 
 ### Fixed
