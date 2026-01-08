@@ -182,6 +182,12 @@ module LookbookVisualTester
         elsif result[:mismatch] > 0
           mismatch = result[:mismatch]
           puts "  [FAIL] Mismatch: #{mismatch.round(2)}%. Diff saved to #{diff_path}"
+
+          # Save DOM snapshot for debugging
+          dom_path = diff_path.sub('.png', '.html')
+          File.write(dom_path, driver.page_source)
+          puts "         DOM Snapshot saved to #{dom_path}"
+
           status = :failed
 
           # Clipboard (Feature parity with legacy ScreenshotTaker)

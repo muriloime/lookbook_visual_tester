@@ -4,7 +4,7 @@ module LookbookVisualTester
     attr_accessor :lookbook_host, :ui_comparison, :diff_dir, :baseline_dir, :current_dir,
                   :history_dir, :history_keep_last_n, :threads, :copy_to_clipboard,
                   :components_folder, :automatic_run, :mask_selectors, :driver_adapter,
-                  :preview_checker_setup, :logger, :wait_time
+                  :preview_checker_setup, :logger, :wait_time, :tolerance
 
     DEFAULT_THREADS = 4
 
@@ -27,7 +27,9 @@ module LookbookVisualTester
       @mask_selectors = []
       @driver_adapter = :ferrum
       @preview_checker_setup = nil
+      @preview_checker_setup = nil
       @wait_time = 0.5
+      @tolerance = 0.0
       @logger = if defined?(Rails) && Rails.respond_to?(:logger) && Rails.logger
                   Rails.logger
                 else

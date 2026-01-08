@@ -51,7 +51,24 @@ LookbookVisualTester.configure do |config|
   config.copy_to_clipboard = true                # Enable xclip support
   config.threads = 4                             # Number of parallel threads (default: 4)
   config.wait_time = 0.5                         # Optional: Wait time (seconds) before screenshot (fixes blank screens)
+  config.tolerance = 0.05                        # Optional: Mismatch tolerance (0.0 to 1.0) to ignore minor rendering differences
 end
+```
+
+## AI Integration
+
+The gem includes tools designed to help AI agents understand and debug your components.
+
+### Inspection
+Get JSON metadata about a preview:
+```bash
+bundle exec rake lookbook:inspect[example/default]
+```
+
+### Context Dump
+Get full source code of the component, preview, and template:
+```bash
+bundle exec rake lookbook:context[example/default]
 ```
 
 ## Usage
@@ -170,7 +187,6 @@ bundle exec rake lookbook:missing
 ## Next Steps
 
 - **Enhanced Approval Workflow**: Implement a `rake lookbook:approve` task (and potentially an interactive mode) to verify and promote changes to baselines without manual file operations.
-- **Tolerance Configuration**: Add support for configuring pixel mismatch tolerance levels to reduce flakiness in rendering (anti-aliasing, shadow rendering differences).
 - **Ignore Regions**: Allow defining specific areas of a component to exclude from visual comparison (useful for unavoidable dynamic content).
 - **Markdown Reports**: Generate markdown summaries of test runs suitable for posting automatically as Pull Request comments.
 - **Cloud Storage**: Integration with cloud storage (S3, GCS) for managing baseline images to keep the git repository light.

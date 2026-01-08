@@ -37,7 +37,13 @@ module LookbookVisualTester
             pixel1 = baseline[x, y]
             pixel2 = current[x, y]
 
-            if pixel1 == pixel2
+            score = 0.0
+            if pixel1 != pixel2
+              score = ChunkyPNG::Color.euclidean_distance_rgba(pixel1, pixel2) / 510.0
+            end
+
+            if score <= LookbookVisualTester.config.tolerance
+              # Match (including exact match where score is 0.0)
               # Blue context for unchanged pixels to make it easier for humans
               gray_val = ChunkyPNG::Color.r(ChunkyPNG::Color.grayscale_teint(pixel1))
               # Keep intensity in R/G but push blue to make it the dominant tint

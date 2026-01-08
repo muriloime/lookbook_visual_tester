@@ -77,6 +77,10 @@ module LookbookVisualTester
         # Usually for visual testing full page is better unless specifically testing viewport.
       end
 
+      def page_source
+        @browser.body
+      end
+
       def cleanup
         @browser.quit
       end

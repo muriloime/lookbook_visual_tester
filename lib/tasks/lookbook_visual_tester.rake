@@ -253,6 +253,139 @@ namespace :lookbook do
     end
     puts "\n"
   end
+
+  desc 'Get detailed inspection data for a preview (JSON)'
+  task :inspect, [:preview_name] => :environment do |_, args|
+    require 'lookbook'
+    require 'lookbook_visual_tester/scenario_finder'
+    require 'lookbook_visual_tester/json_output_handler'
+
+    preview_name = args[:preview_name]
+    unless preview_name
+      LookbookVisualTester::JsonOutputHandler.print({ error: 'Please provide a preview name' })
+      exit 1
+    end
+
+    scenario_run = LookbookVisualTester::ScenarioFinder.call(preview_name)
+
+    unless scenario_run
+      LookbookVisualTester::JsonOutputHandler.print({ error: "No preview found for #{preview_name}" })
+      exit 1
+    end
+
+    scenario = scenario_run.scenario
+    preview = scenario.preview
+    file_path = preview.file_path
+
+    # Try to find line number
+    line_number = nil
+    if File.exist?(file_path)
+      File.foreach(file_path).with_index do |line, index|
+        if line.match?(/^\s*def\s+#{scenario.name}\b/)
+          line_number = index + 1
+          break
+        end
+      end
+    end
+
+    # Inspect component details if available
+    component_class_name = nil
+    component_file_path = nil
+    template_file_path = nil
+
+    if scenario.respond_to?(:component)
+      comp = scenario.component
+      if comp.respond_to?(:component_class) && comp.component_class
+        component_class_name = comp.component_class.name
+        # Best effort to find component source
+        if comp.component_class.instance_methods(false).include?(:initialize)
+          component_file_path = comp.component_class.instance_method(:initialize).source_location&.first
+        end
+        # Fallback to const_source_location if supported (Ruby 2.7+)
+        if component_file_path.nil? && Object.respond_to?(:const_source_location)
+          component_file_path = Object.const_source_location(component_class_name)&.first
+        end
+      end
+
+      template_file_path = comp.template_file_path if comp.respond_to?(:template_file_path)
+    end
+
+    output = {
+      name: scenario.lookup_path,
+      preview_class: preview.name,
+      file_path: file_path,
+      line_number: line_number,
+      url_path: scenario.url_path,
+      component_class: component_class_name,
+      component_path: component_file_path,
+      template_path: template_file_path
+    }
+
+    LookbookVisualTester::JsonOutputHandler.print(output)
+  end
+
+  desc 'Dump content of preview, component, and template for context'
+  task :context, [:preview_name] => :environment do |_, args|
+    require 'lookbook_visual_tester/json_output_handler'
+
+    require 'lookbook'
+    require 'lookbook_visual_tester/scenario_finder'
+
+    preview_name = args[:preview_name]
+    unless preview_name
+      puts 'Error: Please provide a preview name'
+      exit 1
+    end
+
+    scenario_run = LookbookVisualTester::ScenarioFinder.call(preview_name)
+
+    unless scenario_run
+      puts "Error: No preview found for #{preview_name}"
+      exit 1
+    end
+
+    scenario = scenario_run.scenario
+    preview = scenario.preview
+
+    files_to_dump = []
+
+    # 1. Preview File
+    files_to_dump << { path: preview.file_path, label: "Preview: #{preview.name}" }
+
+    # 2. Template File (if available)
+    if scenario.respond_to?(:component)
+      comp = scenario.component
+      if comp.respond_to?(:template_file_path) && comp.template_file_path
+        files_to_dump << { path: comp.template_file_path, label: 'Template' }
+      end
+
+      # 3. Component File (best effort)
+      if comp.respond_to?(:component_class) && comp.component_class
+        component_file_path = nil
+        if comp.component_class.instance_methods(false).include?(:initialize)
+          component_file_path = comp.component_class.instance_method(:initialize).source_location&.first
+        end
+        if component_file_path.nil? && Object.respond_to?(:const_source_location)
+          component_file_path = Object.const_source_location(comp.component_class.name)&.first
+        end
+
+        if component_file_path
+          files_to_dump << { path: component_file_path, label: "Component: #{comp.component_class.name}" }
+        end
+      end
+    end
+
+    files_to_dump.each do |file|
+      next unless file[:path] && File.exist?(file[:path])
+
+      puts "\n"
+      puts '========================================'
+      puts "#{file[:label]} (#{file[:path]})"
+      puts '========================================'
+      puts File.read(file[:path])
+      puts '========================================'
+    end
+  end
 end
 
 # Compatibility aliases and extra tools
