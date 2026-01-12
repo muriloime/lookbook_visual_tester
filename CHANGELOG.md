@@ -1,4 +1,9 @@
 # Changelog
+## [0.6.0] - 2026-01-12
+
+### Fixed
+- **Deep Check Error Handling**: Fixed an issue where `deep_check` would fail to capture `ActionView::Template::Error` (and other rendering errors) in components that return a `Hash` payload (common in newer ViewComponent versions). The checker now correctly extracts the component from the hash and properly renders it to detect failures. [PR #123]
+
 ## [0.5.10] - 2026-01-12
 
 ### Added

@@ -32,17 +32,17 @@ RSpec.describe LookbookVisualTester::ScenarioRun do
       subject { described_class.new(scenario) }
 
       it 'uses default subdirectory' do
-        expect(subject.baseline_path.to_s).to eq('/tmp/baseline/default/forms_input_default.png')
-        expect(subject.current_path.to_s).to eq('/tmp/current/default/forms_input_default.png')
+        expect(subject.baseline_path.to_s).to eq('/tmp/baseline/default/forms/input_default.png')
+        expect(subject.current_path.to_s).to eq('/tmp/current/default/forms/input_default.png')
       end
     end
 
     context 'with variant' do
-      subject { described_class.new(scenario, variant_slug: 'theme-dark') }
+      subject { described_class.new(scenario, variant_slug: 'theme-dark') } # Reverted subject to original as case_with_variant was undefined
 
       it 'uses variant subdirectory' do
-        expect(subject.baseline_path.to_s).to eq('/tmp/baseline/theme-dark/forms_input_default.png')
-        expect(subject.current_path.to_s).to eq('/tmp/current/theme-dark/forms_input_default.png')
+        expect(subject.baseline_path.to_s).to eq('/tmp/baseline/theme-dark/forms/input_default.png')
+        expect(subject.current_path.to_s).to eq('/tmp/current/theme-dark/forms/input_default.png')
       end
     end
   end

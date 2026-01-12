@@ -137,7 +137,6 @@ module LookbookVisualTester
         # and returns a component that renders the template.
         if preview_class.respond_to?(:preview_example)
           result = preview_class.preview_example(example_name)
-          puts "DEBUG: preview_example('#{example_name}') returned: #{result.inspect} (class: #{result.class})"
         else
           # Fallback for older VC or non-standard setups
           preview_instance = preview_class.new
@@ -147,6 +146,9 @@ module LookbookVisualTester
           end
           result = preview_instance.public_send(example_name)
         end
+
+        # Handle Hash return (ViewComponent 3.x+ behavior?)
+        result = result[:component] if result.is_a?(Hash) && result.key?(:component)
 
         if result.respond_to?(:render_in)
           # Mock current_user/pundit if needed on the component itself if possible
@@ -164,16 +166,17 @@ module LookbookVisualTester
           end
 
           output = result.render_in(view_context)
+
           if output.is_a?(String) && output.include?('ActionView::Template::Error')
             return CheckResult.new(preview_name: preview.name,
-                                   example_name:,
+                                   example_name: example_name,
                                    status: :failed, error: 'ActionView::Template::Error found in rendered output',
                                    backtrace: [])
           end
         elsif result.is_a?(String)
           if result.include?('ActionView::Template::Error')
             return CheckResult.new(preview_name: preview.name,
-                                   example_name:,
+                                   example_name: example_name,
                                    status: :failed, error: 'ActionView::Template::Error found in rendered output',
                                    backtrace: [])
           end
