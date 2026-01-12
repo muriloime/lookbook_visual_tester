@@ -131,6 +131,21 @@ You can run your visual tests against multiple configurations (variants), such a
 3. **Mismatches**: If a change is detected, a **Diff** image is generated.
 4. **Approval**: To approve a change (update the baseline), simply copy the file from `current_run` to `baseline`. The HTML report provides a convenient "Copy Approval Command" button for this.
 
+
+### Updating Baselines
+
+To update the baseline images for all previews, run:
+
+```bash
+UPDATE=true rake lookbook:test
+```
+
+Or using the rake argument:
+
+```bash
+rake lookbook:test[force]
+```
+
 ### Reporting
 
 After running `rake lookbook:test`, a detailed HTML report is generated at:

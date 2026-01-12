@@ -1,4 +1,12 @@
 # Changelog
+## [0.5.10] - 2026-01-12
+
+### Added
+- **Force Update**: Added support for forcibly updating all baselines via `rake lookbook:test[force]` or `UPDATE=true rake lookbook:test`.
+
+### Changed
+- **File Naming**: Improved screenshot file naming to use full directory paths (e.g., `folder/component/preview.png`) instead of flattened underscores. This prevents filename clashes between components with similar names in different namespaces (e.g., `Foo::Bar` vs `FooBar`) and preserves directory structure in the output.
+
 ## [0.5.9] - 2026-01-12
 
 ### Fixed

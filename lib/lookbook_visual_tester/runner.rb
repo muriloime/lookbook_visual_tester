@@ -11,9 +11,10 @@ module LookbookVisualTester
     Result = Struct.new(:scenario_name, :status, :mismatch, :diff_path, :error, :baseline_path,
                         :current_path, keyword_init: true)
 
-    def initialize(config = LookbookVisualTester.config, pattern: nil)
+    def initialize(config = LookbookVisualTester.config, pattern: nil, force_update: false)
       @config = config
       @pattern = pattern
+      @force_update = force_update
       @driver_pool = Queue.new
       init_driver_pool
       @results = []
@@ -168,12 +169,17 @@ module LookbookVisualTester
         error = nil
 
         if result[:error]
-          if result[:error] == 'Baseline not found'
+          if result[:error] == 'Baseline not found' || @force_update
             # First run, maybe auto-approve or just report
-            puts '  [NEW] Baseline not found. Saved current as potential baseline.'
+            if @force_update
+              puts '  [UPDATE] Baseline forced update.'
+              status = :passed # Or :updated? Let's use passed for now so it doesn't fail the build
+            else
+              puts '  [NEW] Baseline not found. Saved current as potential baseline.'
+              status = :new
+            end
             FileUtils.mkdir_p(File.dirname(baseline_path))
             FileUtils.cp(current_path, baseline_path)
-            status = :new
           else
             puts "  [ERROR] #{result[:error]}"
             status = :error

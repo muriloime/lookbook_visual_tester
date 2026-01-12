@@ -100,7 +100,7 @@ namespace :lookbook do
 
   desc 'Run visual regression tests for all previews'
   task :test, [:format] => :environment do |_, args|
-    runner = LookbookVisualTester::Runner.new
+    runner = LookbookVisualTester::Runner.new(force_update: args[:format] == 'force' || ENV['UPDATE'] == 'true')
 
     # Check for ENV var or arg
     json_mode = args[:format] == 'json' || ENV['JSON_OUTPUT'] == 'true'
