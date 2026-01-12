@@ -163,8 +163,20 @@ module LookbookVisualTester
             end
           end
 
-          result.render_in(view_context)
+          output = result.render_in(view_context)
+          if output.is_a?(String) && output.include?('ActionView::Template::Error')
+            return CheckResult.new(preview_name: preview.name,
+                                   example_name:,
+                                   status: :failed, error: 'ActionView::Template::Error found in rendered output',
+                                   backtrace: [])
+          end
         elsif result.is_a?(String)
+          if result.include?('ActionView::Template::Error')
+            return CheckResult.new(preview_name: preview.name,
+                                   example_name:,
+                                   status: :failed, error: 'ActionView::Template::Error found in rendered output',
+                                   backtrace: [])
+          end
           # Rendered string, good.
         elsif result.nil?
           # If result is nil, it implies an implicit template rendering.

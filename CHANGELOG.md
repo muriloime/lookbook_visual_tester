@@ -1,4 +1,9 @@
 # Changelog
+## [0.5.9] - 2026-01-12
+
+### Fixed
+- **Deep Check**: Ensure `ActionView::Template::Error` is correctly reported as a failure in `rake lookbook:deep_check`. This fixes an issue where rendered error pages were being ignored.
+
 ## [0.5.8] - 2026-01-08
 
 ### ✨ New Features & Improvements
