@@ -1,5 +1,5 @@
 # Changelog
-## [Unreleased]
+## [0.7.0] - 2026-08-09
 
 ### Removed
 - `cuprite` runtime dependency; legacy `LookbookVisualTester::SessionManager`, `CapybaraSetup`, `ScreenshotTaker`, and `BaselineManager` classes.
