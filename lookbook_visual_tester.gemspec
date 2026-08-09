@@ -41,7 +41,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'concurrent-ruby', '~> 1.3'
   spec.add_dependency 'ferrum', '~> 0.16'
   spec.add_dependency 'lookbook', '~> 2.0'
-  spec.add_dependency 'rails', '~> 7.0'
+  spec.add_dependency 'rails', '~> 8.0'
   spec.add_dependency 'rainbow', '~> 3.0'
 
   # For more information and examples about making a new gem, check out our

@@ -1,4 +1,9 @@
 # Changelog
+## [0.7.1] - 2026-08-09
+
+### Changed
+- Bound the `rails` runtime dependency to `~> 8.0`.
+
 ## [0.7.0] - 2026-08-09
 
 ### Removed
