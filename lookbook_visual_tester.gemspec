@@ -36,13 +36,13 @@ Gem::Specification.new do |spec|
 
   # Uncomment to register a new dependency of your gem
 
-  spec.add_dependency 'benchmark'
-  spec.add_dependency 'chunky_png'
-  spec.add_dependency 'concurrent-ruby'
-  spec.add_dependency 'ferrum', '>= 0.16'
-  spec.add_dependency 'lookbook'
-  spec.add_dependency 'rails'
-  spec.add_dependency 'rainbow'
+  spec.add_dependency 'benchmark', '~> 0.4'
+  spec.add_dependency 'chunky_png', '~> 1.4'
+  spec.add_dependency 'concurrent-ruby', '~> 1.3'
+  spec.add_dependency 'ferrum', '~> 0.16'
+  spec.add_dependency 'lookbook', '~> 2.0'
+  spec.add_dependency 'rails', '~> 7.0'
+  spec.add_dependency 'rainbow', '~> 3.0'
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
@@ -50,6 +50,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_development_dependency 'rspec', '~> 3.10'
-  spec.add_development_dependency 'ruby-prof'
+  spec.add_development_dependency 'ruby-prof', '~> 1.7'
   spec.metadata['rubygems_mfa_required'] = 'true'
 end
