@@ -146,6 +146,15 @@ namespace :lookbook do
     end
   end
 
+  desc 'Start Rails server, run visual tests, then stop the server'
+  task server_and_test: :environment do
+    LookbookVisualTester::ServerTestRunner.call(
+      timeout: ENV.fetch('LOOKBOOK_SERVER_TIMEOUT', '60').to_i,
+      test_task: 'lookbook:test',
+      log_path: ENV['LOOKBOOK_SERVER_LOG']
+    )
+  end
+
   desc 'Approve a specific preview change (update baseline)'
   task :approve, [:preview_name] => :environment do |_, args|
     preview_name = args[:preview_name]

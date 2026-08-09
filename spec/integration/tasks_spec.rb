@@ -18,6 +18,10 @@ RSpec.describe 'Rake tasks' do
     expect(Rake::Task.task_defined?('lookbook:approve')).to be true
   end
 
+  it 'registers lookbook:server_and_test' do
+    expect(Rake::Task.task_defined?('lookbook:server_and_test')).to be true
+  end
+
   it 'does not reassign $stdout during lookbook:test in json mode' do
     original = $stdout
     runner_double = double('Runner', run: [])
