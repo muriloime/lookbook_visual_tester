@@ -1,5 +1,4 @@
 require_relative 'service'
-require_relative 'screenshot_taker'
 
 module LookbookVisualTester
   class UpdatePreviews < Service
@@ -12,7 +11,7 @@ module LookbookVisualTester
 
     def update_app_data
       LookbookVisualTester.data[:last_changed_files] = changes.presence || []
-      LookbookVisualTester.data[:last_changed_previews] = previews
+      LookbookVisualTester.data[:last_changed_previews] = selected_previews
     end
 
     def call
@@ -47,8 +46,6 @@ module LookbookVisualTester
 
     def clean_file_name(file)
       file = file.split(components_folder)[-1]
-      # '/' + file.split('/')[-1].split('.')[0]
-      puts ">>>> #{file}"
       file.split('.')[0].gsub('_preview', '')
     end
 
@@ -61,14 +58,8 @@ module LookbookVisualTester
     def process_changes
       Rails.logger.info "LookbookVisualTester: previews #{selected_previews.count}"
       selected_previews.each do |preview|
-        Rails.logger.info "LookbookVisualTester: entering #{preview.inspect}"
-
-        group = preview.respond_to?(:scenarios) ? preview.scenarios : preview.examples
-        group.each do |scenario|
-          scenario_run = LookbookVisualTester::ScenarioRun.new(scenario)
-          Rails.logger.info "LookbookVisualTester: Processing scenario #{scenario_run.inspect}"
-          LookbookVisualTester::ScreenshotTaker.call(scenario_run: scenario_run)
-        end
+        Rails.logger.info "LookbookVisualTester: running Runner for #{preview.inspect}"
+        LookbookVisualTester::Runner.new(pattern: preview.name).run
       end
     end
   end

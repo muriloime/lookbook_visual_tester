@@ -1,7 +1,6 @@
 require 'spec_helper'
 require 'lookbook_visual_tester/update_previews'
 require 'lookbook_visual_tester/scenario_run'
-require 'lookbook_visual_tester/screenshot_taker'
 
 RSpec.describe LookbookVisualTester::UpdatePreviews do
   let(:app) { double('app', data: double('data')) }
@@ -64,9 +63,9 @@ RSpec.describe LookbookVisualTester::UpdatePreviews do
     end
   end
 
-  describe '#previews' do
+  describe '#selected_previews' do
     let(:modified_files) { ['app/components/button_preview.rb'] }
-    let(:preview) { double('preview', file_path: 'app/components/button_preview.rb') }
+    let(:preview) { double('preview', file_path: 'app/components/button_preview.rb', name: 'Button') }
 
     before do
       allow(Lookbook).to receive(:previews).and_return([preview])
@@ -80,22 +79,20 @@ RSpec.describe LookbookVisualTester::UpdatePreviews do
   describe '#process_changes' do
     let(:modified_files) { ['app/components/button_preview.rb'] }
     let(:scenario) { double('scenario') }
-    let(:preview) { double('preview', scenarios: [scenario], file_path: 'app/components/button_preview.rb') }
-    let(:scenario_run) { double('scenario_run', preview_url: 'url', current_path: 'path') }
+    let(:preview) { double('preview', scenarios: [scenario], file_path: 'app/components/button_preview.rb', name: 'Button') }
+    let(:runner) { double('Runner') }
 
     before do
       allow(preview).to receive(:respond_to?).with(:scenarios).and_return(true)
       allow(Lookbook).to receive(:previews).and_return([preview])
-      allow(LookbookVisualTester::ScenarioRun).to receive(:new).with(scenario).and_return(scenario_run)
-      allow(LookbookVisualTester::ScreenshotTaker).to receive(:call)
-      allow(Rails.logger).to receive(:info) # Ensure logger.info is stubbed
+      allow(LookbookVisualTester::Runner).to receive(:new).with(pattern: 'Button').and_return(runner)
+      allow(runner).to receive(:run)
+      allow(Rails.logger).to receive(:info)
     end
 
-    it 'processes each preview and takes screenshots' do
-      expect(LookbookVisualTester::ScreenshotTaker).to receive(:call).with(scenario_run: scenario_run)
-
-      # Verify logging
-      expect(Rails.logger).to receive(:info).with("LookbookVisualTester: previews #{[preview].count}")
+    it 'runs the Ferrum Runner for each changed preview' do
+      expect(LookbookVisualTester::Runner).to receive(:new).with(pattern: 'Button')
+      expect(runner).to receive(:run)
 
       service.send(:process_changes)
     end
