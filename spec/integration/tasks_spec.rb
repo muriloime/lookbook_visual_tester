@@ -17,4 +17,15 @@ RSpec.describe 'Rake tasks' do
   it 'has lookbook:approve task' do
     expect(Rake::Task.task_defined?('lookbook:approve')).to be true
   end
+
+  it 'does not reassign $stdout during lookbook:test in json mode' do
+    original = $stdout
+    runner_double = double('Runner', run: [])
+    allow(LookbookVisualTester::Runner).to receive(:new).and_return(runner_double)
+
+    Rake::Task['lookbook:test'].reenable
+    Rake::Task['lookbook:test'].invoke('json')
+
+    expect($stdout).to equal(original)
+  end
 end

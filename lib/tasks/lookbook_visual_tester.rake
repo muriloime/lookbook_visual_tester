@@ -38,8 +38,7 @@ namespace :lookbook do
   task :list, [:format] => :environment do |_, args|
     require 'lookbook'
     previews = Lookbook.previews.flat_map do |preview|
-      group = preview.respond_to?(:scenarios) ? preview.scenarios : preview.examples
-      group.map { |scenario| scenario.lookup_path }
+      preview.scenarios.map { |scenario| scenario.lookup_path }
     end.sort
 
     if args[:format] == 'json'
@@ -54,8 +53,10 @@ namespace :lookbook do
     preview_name = args[:preview_name]
     format = args[:format]
 
+    json_mode = format == 'json'
+
     unless preview_name
-      if format == 'json'
+      if json_mode
         LookbookVisualTester::JsonOutputHandler.print({ error: 'Please provide a preview name' })
       else
         puts 'Please provide a preview name: rake lookbook:screenshot[Button]'
@@ -63,21 +64,12 @@ namespace :lookbook do
       exit 1
     end
 
-    # Run the test (which generates screenshots)
-    runner = LookbookVisualTester::Runner.new(pattern: preview_name)
+    output = json_mode ? File.open(File::NULL, 'w') : $stdout
+    runner = LookbookVisualTester::Runner.new(pattern: preview_name, output: output)
+    results = runner.run
+    output.close if json_mode
 
-    # Silence stdout if json format, to avoid pollution
-    original_stdout = $stdout
-    $stdout = File.new('/dev/null', 'w') if format == 'json'
-
-    begin
-      results = runner.run
-    ensure
-      $stdout = original_stdout if format == 'json'
-    end
-
-    if format == 'json'
-      # Transform results to simple hash
+    if json_mode
       json_results = results.map do |r|
         {
           scenario_name: r.scenario_name,
@@ -90,9 +82,8 @@ namespace :lookbook do
         }
       end
 
-      # If single result, return just object, else array
-      output = json_results.size == 1 ? json_results.first : json_results
-      LookbookVisualTester::JsonOutputHandler.print(output)
+      output_payload = json_results.size == 1 ? json_results.first : json_results
+      LookbookVisualTester::JsonOutputHandler.print(output_payload)
     else
       print_cli_summary(results)
     end
@@ -100,21 +91,16 @@ namespace :lookbook do
 
   desc 'Run visual regression tests for all previews'
   task :test, [:format] => :environment do |_, args|
-    runner = LookbookVisualTester::Runner.new(force_update: args[:format] == 'force' || ENV['UPDATE'] == 'true')
-
-    # Check for ENV var or arg
     json_mode = args[:format] == 'json' || ENV['JSON_OUTPUT'] == 'true'
+    output = json_mode ? File.open(File::NULL, 'w') : $stdout
 
-    original_stdout = $stdout
-    $stdout = File.new('/dev/null', 'w') if json_mode
+    runner = LookbookVisualTester::Runner.new(
+      force_update: args[:format] == 'force' || ENV['UPDATE'] == 'true',
+      output: output
+    )
+    results = runner.run
+    output.close if json_mode
 
-    begin
-      results = runner.run
-    ensure
-      $stdout = original_stdout if json_mode
-    end
-
-    # Save results for retry logic
     if defined?(LookbookVisualTester.config.diff_dir)
       result_file = LookbookVisualTester.config.diff_dir.join('last_run.json')
       FileUtils.mkdir_p(File.dirname(result_file))
@@ -210,10 +196,15 @@ namespace :lookbook do
 
     puts "Retrying #{failures.size} failure(s)..."
 
-    failures.each do |failure|
-      puts "Retrying #{failure[:scenario_name]}..."
-      runner = LookbookVisualTester::Runner.new(pattern: failure[:scenario_name])
-      runner.run
+    json_mode = args[:format] == 'json' || ENV['JSON_OUTPUT'] == 'true'
+    output = json_mode ? File.open(File::NULL, 'w') : $stdout
+    begin
+      failures.each do |failure|
+        puts "Retrying #{failure[:scenario_name]}..."
+        LookbookVisualTester::Runner.new(pattern: failure[:scenario_name], output: output).run
+      end
+    ensure
+      output.close if json_mode
     end
   end
 
@@ -435,11 +426,9 @@ namespace :lookbook_visual_tester do
     if args[:skip_capture].to_s == 'true'
       # Just print existing
     else
-      # Run it first but silenty
-      runner = LookbookVisualTester::Runner.new(pattern: args[:name])
-      $stdout = File.new('/dev/null', 'w')
+      # Run it first, silently
+      runner = LookbookVisualTester::Runner.new(pattern: args[:name], output: File.open(File::NULL, 'w'))
       runner.run
-      $stdout = STDOUT
     end
 
     puts scenario_run.current_path
