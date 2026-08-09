@@ -6,11 +6,15 @@ module LookbookVisualTester
     class FerrumDriver < Driver
       def initialize(config)
         super
-        @browser = Ferrum::Browser.new(
+        browser_opts = {
           headless: true,
-          window_size: [1280, 800], # Default, can be resized
-          timeout: 10 # Configurable?
-        )
+          window_size: [1280, 800],
+          timeout: config.browser_timeout,
+          process_timeout: config.process_timeout,
+          browser_options: config.browser_options
+        }
+        browser_opts[:browser_path] = config.browser_path if config.browser_path
+        @browser = Ferrum::Browser.new(**browser_opts)
       end
 
       def visit(url)

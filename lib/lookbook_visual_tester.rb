@@ -3,6 +3,7 @@
 # lib/lookbook_visual_tester.rb
 
 require_relative 'lookbook_visual_tester/version'
+require_relative 'lookbook_visual_tester/browser_discovery'
 require_relative 'lookbook_visual_tester/configuration'
 require_relative 'lookbook_visual_tester/railtie' if defined?(Rails)
 require_relative 'lookbook_visual_tester/scenario_finder'
@@ -13,6 +14,7 @@ require_relative 'lookbook_visual_tester/drivers/ferrum_driver'
 require_relative 'lookbook_visual_tester/services/image_comparator'
 require_relative 'lookbook_visual_tester/services/image_trimmer'
 require_relative 'lookbook_visual_tester/server_test_runner'
+
 
 module LookbookVisualTester
   class Error < StandardError; end

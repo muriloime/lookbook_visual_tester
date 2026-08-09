@@ -4,7 +4,8 @@ module LookbookVisualTester
     attr_accessor :lookbook_host, :ui_comparison, :diff_dir, :baseline_dir, :current_dir,
                   :history_dir, :history_keep_last_n, :threads, :copy_to_clipboard,
                   :components_folder, :automatic_run, :mask_selectors, :driver_adapter,
-                  :preview_checker_setup, :logger, :wait_time, :tolerance
+                  :preview_checker_setup, :logger, :wait_time, :tolerance,
+                  :browser_path, :browser_options, :browser_timeout, :process_timeout
 
     DEFAULT_THREADS = 4
 
@@ -37,6 +38,13 @@ module LookbookVisualTester
                 end
 
       @lookbook_host = ENV.fetch('LOOKBOOK_HOST', 'http://localhost:5000')
+      # Browser (Ferrum/Chrome) configuration. Defaults target modern Chrome's
+      # `--headless=new` mode; the old `--headless` flag is rejected by current
+      # Chrome builds ("Multiple targets are not supported in headless mode").
+      @browser_path = ENV['LOOKBOOK_BROWSER_PATH'] || LookbookVisualTester::BrowserDiscovery.find_binary
+      @browser_options = { 'headless' => 'new' }
+      @browser_timeout = ENV.fetch('LOOKBOOK_BROWSER_TIMEOUT', '10').to_i
+      @process_timeout = ENV.fetch('LOOKBOOK_PROCESS_TIMEOUT', '10').to_i
     end
 
     def base_path=(value)

@@ -38,6 +38,16 @@ RSpec.describe LookbookVisualTester::Configuration do
     expect(config.wait_time).to eq(0.5)
   end
 
+  it 'defaults browser_options to headless=new for modern Chrome' do
+    expect(config.browser_options).to eq('headless' => 'new')
+  end
+
+  it 'respects LOOKBOOK_BROWSER_PATH env override over auto-discovery' do
+    with_env_stub('LOOKBOOK_BROWSER_PATH' => '/custom/chrome') do
+      expect(described_class.new.browser_path).to eq('/custom/chrome')
+    end
+  end
+
   # Stubbing ENV.fetch is fragile because Configuration calls several keys.
   # Use a real ENV round-trip via a helper that restores the original values.
   def with_env_stub(overrides = {})
