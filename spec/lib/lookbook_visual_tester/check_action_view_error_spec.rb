@@ -19,7 +19,7 @@ RSpec.describe LookbookVisualTester::PreviewChecker do
       allow_any_instance_of(preview_class).to receive(:default).and_return(component)
       allow(component).to receive(:respond_to?).and_return(true)
 
-      allow(checker).to receive(:setup_view_context).and_return(double('ViewContext'))
+      allow(checker).to receive(:build_view_context).and_return(double('ViewContext'))
 
       # Simulate render_in returning an error page string instead of raising
       error_page_html = '<html><body><h1>ActionView::Template::Error</h1><p>Something went wrong</p></body></html>'

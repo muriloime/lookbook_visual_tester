@@ -57,7 +57,7 @@ RSpec.describe LookbookVisualTester::PreviewChecker do
       allow(component).to receive(:render_in)
 
       # Mock the view context setup which is complex
-      allow(checker).to receive(:setup_view_context).and_return(double('ViewContext'))
+      allow(checker).to receive(:build_view_context).and_return(double('ViewContext'))
 
       results = checker.deep_check
       expect(results.first.status).to eq(:passed)
@@ -69,6 +69,27 @@ RSpec.describe LookbookVisualTester::PreviewChecker do
 
       results = checker.deep_check
       expect(results.first.status).to eq(:passed)
+    end
+  end
+
+  describe '#run_setup' do
+    it 'calls the configured preview_checker_setup block' do
+      called = false
+      local_config = LookbookVisualTester::Configuration.new
+      local_config.preview_checker_setup = -> { called = true }
+
+      checker = described_class.new(local_config)
+      checker.send(:run_setup)
+
+      expect(called).to be(true)
+    end
+
+    it 'does nothing when no setup block is configured' do
+      local_config = LookbookVisualTester::Configuration.new
+      local_config.preview_checker_setup = nil
+
+      checker = described_class.new(local_config)
+      expect { checker.send(:run_setup) }.not_to raise_error
     end
   end
 end
