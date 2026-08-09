@@ -21,12 +21,11 @@ module LookbookVisualTester
       @history_dir = @base_path.join('history')
       @threads = ENV.fetch('LOOKBOOK_THREADS', DEFAULT_THREADS).to_i
       @history_keep_last_n = 5
-      @copy_to_clipboard = true
+      @copy_to_clipboard = false
       @components_folder = 'app/components'
-      @automatic_run = ENV.fetch('LOOKBOOK_AUTOMATIC_RUN', false)
+      @automatic_run = ENV.fetch('LOOKBOOK_AUTOMATIC_RUN', 'false') == 'true'
       @mask_selectors = []
       @driver_adapter = :ferrum
-      @preview_checker_setup = nil
       @preview_checker_setup = nil
       @wait_time = 0.5
       @tolerance = 0.0
