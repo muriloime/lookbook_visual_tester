@@ -6,16 +6,17 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'rake', '~> 13.0'
-
 gem 'minitest', '~> 5.16'
-
-gem 'rubocop', '~> 1.66'
 
 gem 'async'
 gem 'async-http'
 gem 'concurrent-ruby'
 gem 'lookbook'
 gem 'rails', '~> 8.0'
+
+group :development do
+  gem 'rubocop', '~> 1.66'
+end
 
 group :development, :test do
   gem 'capybara', '~> 3.35'
