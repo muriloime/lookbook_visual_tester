@@ -32,4 +32,31 @@ RSpec.describe 'Rake tasks' do
 
     expect($stdout).to equal(original)
   end
+
+  describe 'lookbook:approve' do
+    it 'approves the correct baseline file for a namespaced preview and ignores decoys' do
+      current_dir = LookbookVisualTester.config.current_dir
+      baseline_dir = LookbookVisualTester.config.baseline_dir
+      FileUtils.mkdir_p(current_dir.join('theme-dark'))
+      FileUtils.mkdir_p(baseline_dir.join('theme-dark'))
+
+      file = current_dir.join('theme-dark/ui_button_default.png')
+      File.write(file, 'fake-png-data')
+
+      decoy = current_dir.join('theme-dark/ui_button_defaultmobile.png')
+      File.write(decoy, 'should-not-be-approved')
+
+      begin
+        Rake::Task['lookbook:approve'].reenable
+        Rake::Task['lookbook:approve'].invoke('ui/button/default')
+
+        expect(File.exist?(baseline_dir.join('theme-dark/ui_button_default.png'))).to be(true)
+        expect(File.exist?(baseline_dir.join('theme-dark/ui_button_defaultmobile.png'))).to be(false)
+      ensure
+        FileUtils.rm_rf(current_dir.join('theme-dark'))
+        FileUtils.rm_f(baseline_dir.join('theme-dark/ui_button_default.png'))
+        FileUtils.rm_f(baseline_dir.join('theme-dark/ui_button_defaultmobile.png'))
+      end
+    end
+  end
 end

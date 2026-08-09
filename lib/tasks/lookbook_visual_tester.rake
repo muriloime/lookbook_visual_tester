@@ -159,31 +159,32 @@ namespace :lookbook do
   task :approve, [:preview_name] => :environment do |_, args|
     preview_name = args[:preview_name]
     unless preview_name
-      puts 'Please provide a preview name: rake lookbook:approve[Button/default]'
+      puts 'Please provide a preview name: rake "lookbook:approve[ui/button/default]"'
       exit 1
     end
 
+    normalized = preview_name.tr('/', '_').tr(' ', '_')
     baseline_dir = LookbookVisualTester.config.baseline_dir
     current_dir = LookbookVisualTester.config.current_dir
 
-    # Find matching files in current_dir
-    candidates = Dir.glob(current_dir.join('*')).select do |f|
-      File.basename(f).include?(preview_name.gsub('/', '_'))
+    candidates = Dir.glob(current_dir.join('**', '*.png')).reject do |f|
+      File.basename(f).end_with?('_diff.png')
+    end.select do |f|
+      base = File.basename(f, '.png')
+      base == normalized || base.end_with?("_#{normalized}")
     end
 
     if candidates.empty?
-      puts "No current runs found matching '#{preview_name}'."
+      puts "No current runs found matching '#{preview_name}' in #{current_dir}."
       exit 1
     end
 
     candidates.each do |current_file|
-      filename = File.basename(current_file)
-      next if filename.include?('_diff.png') # Don't copy diffs
-
-      baseline_file = baseline_dir.join(filename)
-      FileUtils.mkdir_p(baseline_dir)
+      relative = Pathname.new(current_file).relative_path_from(current_dir)
+      baseline_file = baseline_dir.join(relative)
+      FileUtils.mkdir_p(File.dirname(baseline_file))
       FileUtils.cp(current_file, baseline_file)
-      puts "Approved: #{filename}"
+      puts "Approved: #{relative}"
     end
   end
 
