@@ -1,4 +1,27 @@
 # Changelog
+## [Unreleased]
+
+### Removed
+- `cuprite` runtime dependency; legacy `LookbookVisualTester::SessionManager`, `CapybaraSetup`, `ScreenshotTaker`, and `BaselineManager` classes.
+- ImageMagick `convert` and `compare` shell calls from the visual regression path.
+- Hard-coded Devise/Warden/Pundit auth mocking inside the gem.
+- Lookbook 1.x (`examples`) fallback — only Lookbook 2.x (`scenarios`) is supported.
+- Global `$stdout` mutation in rake tasks.
+- Version-fragile `check_preview_controller_config` introspection in `PreviewChecker`.
+
+### Added
+- Pure-Ruby `LookbookVisualTester::ImageTrimmer` (ChunkyPNG) — no ImageMagick needed to trim screenshots.
+- `config.preview_checker_setup` host hook for providing auth/helpers during deep checks.
+- `LookbookVisualTester::ServerTestRunner` and `rake lookbook:server_and_test` for unattended agent/CI runs (process-group cleanup, log capture, configurable timeout).
+- `Runner#initialize(..., output:)` — injectable output stream for thread-safe/quiet runs.
+
+### Changed
+- `copy_to_clipboard` now defaults to `false` (opt in to `xclip`).
+- `automatic_run` is parsed as a boolean from the `LOOKBOOK_AUTOMATIC_RUN` env var.
+- The Railtie `Lookbook.after_change` auto-run hook now drives the Ferrum `Runner` instead of the deleted Capybara `ScreenshotTaker`.
+- `Runner#run_scenario` decomposed into focused private methods; the concurrent path stores its driver per-thread.
+- `lookbook:approve` matches namespaced previews by exact base name or `_suffix`, so approving `ui/button/default` no longer also approves `ui_button_defaultmobile`.
+
 ## [0.6.0] - 2026-01-12
 
 ### Fixed
