@@ -14,6 +14,8 @@
 - `config.preview_checker_setup` host hook for providing auth/helpers during deep checks.
 - `LookbookVisualTester::ServerTestRunner` and `rake lookbook:server_and_test` for unattended agent/CI runs (process-group cleanup, log capture, configurable timeout).
 - `Runner#initialize(..., output:)` — injectable output stream for thread-safe/quiet runs.
+- `LookbookVisualTester::BrowserDiscovery` plus `config.browser_path` / `LOOKBOOK_BROWSER_PATH` to resolve a real Chrome binary, avoiding PATH-resolved wrapper scripts that break headless mode.
+- `config.browser_options` (defaults to `{ "headless" => "new" }`), `config.browser_timeout`, and `config.process_timeout` for robust modern-Chrome launches.
 
 ### Changed
 - `copy_to_clipboard` now defaults to `false` (opt in to `xclip`).
@@ -21,6 +23,7 @@
 - The Railtie `Lookbook.after_change` auto-run hook now drives the Ferrum `Runner` instead of the deleted Capybara `ScreenshotTaker`.
 - `Runner#run_scenario` decomposed into focused private methods; the concurrent path stores its driver per-thread.
 - `lookbook:approve` matches namespaced previews by exact base name or `_suffix`, so approving `ui/button/default` no longer also approves `ui_button_defaultmobile`.
+- Ferrum dependency bumped to `>= 0.16` and launches with `--headless=new`, fixing "Multiple targets are not supported in headless mode" on modern Chrome builds.
 
 ## [0.6.0] - 2026-01-12
 
