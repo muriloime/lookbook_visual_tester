@@ -3,6 +3,7 @@ require 'json'
 require_relative 'configuration'
 require_relative 'scenario_run'
 require_relative 'services/image_comparator'
+require_relative 'services/image_trimmer'
 require_relative 'drivers/ferrum_driver'
 require_relative 'variant_resolver'
 
@@ -11,10 +12,14 @@ module LookbookVisualTester
     Result = Struct.new(:scenario_name, :status, :mismatch, :diff_path, :error, :baseline_path,
                         :current_path, keyword_init: true)
 
-    def initialize(config = LookbookVisualTester.config, pattern: nil, force_update: false)
+    DEFAULT_DRIVER_WIDTH = 1280
+    DEFAULT_DRIVER_HEIGHT = 800
+
+    def initialize(config = LookbookVisualTester.config, pattern: nil, force_update: false, output: $stdout)
       @config = config
       @pattern = pattern
       @force_update = force_update
+      @output = output
       @driver_pool = Queue.new
       init_driver_pool
       @results = []
@@ -31,8 +36,8 @@ module LookbookVisualTester
         end
       end
 
-      puts "Found #{previews.count} previews matching '#{@pattern}'."
-      puts "Running against #{@variants.size} variant(s)."
+      @output.puts "Found #{previews.count} previews matching '#{@pattern}'."
+      @output.puts "Running against #{@variants.size} variant(s)."
 
       @variants.each do |variant_input|
         resolver = VariantResolver.new(variant_input)
@@ -40,7 +45,7 @@ module LookbookVisualTester
         variant_slug = resolver.slug
         width = resolver.width_in_pixels
 
-        puts "  Variant: #{variant_slug.presence || 'Default'}"
+        @output.puts "  Variant: #{variant_slug.presence || 'Default'}"
 
         if @config.threads > 1
           run_concurrently(previews, variant_slug, variant_options, width)
@@ -63,15 +68,18 @@ module LookbookVisualTester
       begin
         JSON.parse(variants_json)
       rescue JSON::ParserError
-        puts 'Invalid JSON in VARIANTS env var. Defaulting to standard run.'
+        @output.puts 'Invalid JSON in VARIANTS env var. Defaulting to standard run.'
         [{}]
       end
     end
 
+    def scenarios_for(preview)
+      preview.scenarios
+    end
+
     def run_sequentially(previews, variant_slug, variant_options, width)
       previews.each do |preview|
-        group = preview.respond_to?(:scenarios) ? preview.scenarios : preview.examples
-        group.each do |scenario|
+        scenarios_for(preview).each do |scenario|
           driver = checkout_driver
           begin
             @results << run_scenario(scenario, driver, variant_slug, variant_options, width)
@@ -88,8 +96,7 @@ module LookbookVisualTester
       promises = []
 
       previews.each do |preview|
-        group = preview.respond_to?(:scenarios) ? preview.scenarios : preview.examples
-        group.each do |scenario|
+        scenarios_for(preview).each do |scenario|
           promises << Concurrent::Promises.future_on(pool) do
             driver = checkout_driver
             begin
@@ -101,8 +108,6 @@ module LookbookVisualTester
         end
       end
 
-      # Zip results from this concurrent batch into results
-      # Note: This aggregates results per variant loop.
       @results.concat(Concurrent::Promises.zip(*promises).value)
       pool.shutdown
       pool.wait_for_termination
@@ -110,9 +115,7 @@ module LookbookVisualTester
 
     def init_driver_pool
       count = @config.threads > 1 ? @config.threads : 1
-      count.times do
-        @driver_pool << LookbookVisualTester::Drivers::FerrumDriver.new(@config)
-      end
+      count.times { @driver_pool << Drivers::FerrumDriver.new(@config) }
     end
 
     def checkout_driver
@@ -133,98 +136,111 @@ module LookbookVisualTester
     def run_scenario(scenario, driver, variant_slug, variant_options, width)
       run_data = ScenarioRun.new(scenario, variant_slug: variant_slug,
                                            display_params: variant_options)
-      puts "Running visual test for: #{run_data.name} #{variant_slug.present? ? "[#{variant_slug}]" : ''}"
+      @output.puts "Running visual test for: #{run_data.name} #{variant_slug.present? ? "[#{variant_slug}]" : ''}"
 
+      paths = prepare_paths(run_data, variant_slug)
+      Thread.current[:lookbook_visual_tester_driver] = driver
       begin
-        driver_width = width || 1280
-        driver.resize_window(driver_width, 800)
-        driver.visit(run_data.preview_url)
-
-        # Determine paths
-        current_path = run_data.current_path
-        baseline_path = run_data.baseline_path
-        folder_name = variant_slug.presence || 'default'
-        diff_path = @config.diff_dir.join(folder_name, run_data.diff_filename)
-
-        FileUtils.mkdir_p(File.dirname(current_path))
-        FileUtils.mkdir_p(File.dirname(diff_path))
-
-        driver.save_screenshot(current_path.to_s)
-
-        # Trimming (Feature parity with legacy ScreenshotTaker)
-        if File.exist?(current_path)
-          system("convert #{current_path} -trim -bordercolor white -border 10x10 #{current_path}")
-        end
-
-        comparator = LookbookVisualTester::ImageComparator.new(
-          baseline_path.to_s,
-          current_path.to_s,
-          diff_path.to_s
-        )
-
-        result = comparator.call
-
-        status = :passed
-        mismatch = 0.0
-        error = nil
-
-        if result[:error]
-          if result[:error] == 'Baseline not found' || @force_update
-            # First run, maybe auto-approve or just report
-            if @force_update
-              puts '  [UPDATE] Baseline forced update.'
-              status = :passed # Or :updated? Let's use passed for now so it doesn't fail the build
-            else
-              puts '  [NEW] Baseline not found. Saved current as potential baseline.'
-              status = :new
-            end
-            FileUtils.mkdir_p(File.dirname(baseline_path))
-            FileUtils.cp(current_path, baseline_path)
-          else
-            puts "  [ERROR] #{result[:error]}"
-            status = :error
-            error = result[:error]
-          end
-        elsif result[:mismatch] > 0
-          mismatch = result[:mismatch]
-          puts "  [FAIL] Mismatch: #{mismatch.round(2)}%. Diff saved to #{diff_path}"
-
-          # Save DOM snapshot for debugging
-          dom_path = diff_path.sub('.png', '.html')
-          File.write(dom_path, driver.page_source)
-          puts "         DOM Snapshot saved to #{dom_path}"
-
-          status = :failed
-
-          # Clipboard (Feature parity with legacy ScreenshotTaker)
-          if @config.copy_to_clipboard
-            system("xclip -selection clipboard -t image/png -i #{current_path}")
-          end
-        else
-          puts '  [PASS] Identical.'
-          status = :passed
-        end
-
-        Result.new(
-          scenario_name: run_data.name,
-          status: status,
-          mismatch: mismatch,
-          diff_path: diff_path.to_s,
-          error: error,
-          baseline_path: baseline_path.to_s,
-          current_path: current_path.to_s
-        )
+        capture(driver, run_data, paths, width)
+        compare_against_baseline(run_data, paths)
       rescue StandardError => e
-        puts "  [ERROR] Exception: #{e.message}"
-        puts e.backtrace.take(5)
-        Result.new(
-          scenario_name: run_data.name,
-          status: :error,
-          error: e.message,
-          baseline_path: run_data.baseline_path.to_s,
-          current_path: run_data.current_path.to_s
-        )
+        record_failure(run_data, paths, e)
+      ensure
+        Thread.current[:lookbook_visual_tester_driver] = nil
       end
+    end
+
+    def prepare_paths(run_data, variant_slug)
+      folder_name = variant_slug.presence || 'default'
+      {
+        current: run_data.current_path,
+        baseline: run_data.baseline_path,
+        diff: @config.diff_dir.join(folder_name, run_data.diff_filename)
+      }
+    end
+
+    def capture(driver, run_data, paths, width)
+      driver.resize_window(width || DEFAULT_DRIVER_WIDTH, DEFAULT_DRIVER_HEIGHT)
+      driver.visit(run_data.preview_url)
+
+      FileUtils.mkdir_p(File.dirname(paths[:current]))
+      FileUtils.mkdir_p(File.dirname(paths[:diff]))
+
+      driver.save_screenshot(paths[:current].to_s)
+      ImageTrimmer.call(paths[:current].to_s) if File.exist?(paths[:current].to_s)
+    end
+
+    def compare_against_baseline(run_data, paths)
+      comparator = ImageComparator.new(paths[:baseline].to_s, paths[:current].to_s, paths[:diff].to_s)
+      result = comparator.call
+      @results << build_result(run_data, paths, result)
+    end
+
+    def build_result(run_data, paths, result)
+      if result[:error]
+        if result[:error] == 'Baseline not found' || @force_update
+          handle_missing_baseline(run_data, paths)
+        else
+          @output.puts "  [ERROR] #{result[:error]}"
+          Result.new(scenario_name: run_data.name, status: :error, error: result[:error],
+                     baseline_path: paths[:baseline].to_s, current_path: paths[:current].to_s)
+        end
+      elsif result[:mismatch] > 0
+        record_mismatch(run_data, paths, result)
+      else
+        @output.puts '  [PASS] Identical.'
+        Result.new(scenario_name: run_data.name, status: :passed, mismatch: 0.0,
+                   diff_path: paths[:diff].to_s, baseline_path: paths[:baseline].to_s,
+                   current_path: paths[:current].to_s)
+      end
+    end
+
+    def handle_missing_baseline(run_data, paths)
+      if @force_update
+        @output.puts '  [UPDATE] Baseline forced update.'
+        status = :passed
+      else
+        @output.puts '  [NEW] Baseline not found. Saved current as potential baseline.'
+        status = :new
+      end
+      FileUtils.mkdir_p(File.dirname(paths[:baseline]))
+      FileUtils.cp(paths[:current], paths[:baseline])
+      Result.new(scenario_name: run_data.name, status: status, mismatch: 0.0,
+                 diff_path: nil, baseline_path: paths[:baseline].to_s,
+                 current_path: paths[:current].to_s)
+    end
+
+    def record_mismatch(run_data, paths, result)
+      mismatch = result[:mismatch]
+      @output.puts "  [FAIL] Mismatch: #{mismatch.round(2)}%. Diff saved to #{paths[:diff]}"
+
+      dom_path = paths[:diff].sub('.png', '.html')
+      File.write(dom_path, driver.page_source)
+      @output.puts "         DOM Snapshot saved to #{dom_path}"
+
+      copy_to_clipboard_if_enabled(paths[:current])
+
+      Result.new(scenario_name: run_data.name, status: :failed, mismatch: mismatch,
+                 diff_path: paths[:diff].to_s, baseline_path: paths[:baseline].to_s,
+                 current_path: paths[:current].to_s)
+    end
+
+    def copy_to_clipboard_if_enabled(current_path)
+      return unless @config.copy_to_clipboard
+
+      system("xclip -selection clipboard -t image/png -i #{current_path}")
+    end
+
+    def record_failure(run_data, paths, error)
+      @output.puts "  [ERROR] Exception: #{error.message}"
+      @output.puts error.backtrace.take(5)
+      Result.new(scenario_name: run_data.name, status: :error, error: error.message,
+                 baseline_path: paths[:baseline].to_s, current_path: paths[:current].to_s)
+    end
+
+    # Resolves the driver for the current scenario thread, set in run_scenario.
+    def driver
+      Thread.current[:lookbook_visual_tester_driver]
     end
   end
 end

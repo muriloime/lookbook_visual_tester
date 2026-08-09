@@ -11,6 +11,7 @@ require_relative 'lookbook_visual_tester/runner'
 require_relative 'lookbook_visual_tester/driver'
 require_relative 'lookbook_visual_tester/drivers/ferrum_driver'
 require_relative 'lookbook_visual_tester/services/image_comparator'
+require_relative 'lookbook_visual_tester/services/image_trimmer'
 
 module LookbookVisualTester
   class Error < StandardError; end
