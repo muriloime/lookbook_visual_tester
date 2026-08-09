@@ -12,19 +12,16 @@ A powerful visual regression testing tool for [ViewComponent](https://viewcompon
 - **Intelligent Diffing**: High-quality image comparison using `chunky_png`.
 - **Human-Friendly Aesthetics**: Context is rendered with a light blue tint to make red highlights of differences pop.
 - **Robust Capture**: Automatically disables animations, waits for network idle, and allows masking/cropping.
-- **Lookbook Support**: Compatible with both Lookbook 1.x (`examples`) and 2.x (`scenarios`).
+- **Lookbook Support**: Compatible with Lookbook 2.x (`scenarios`).
 - **Internal Test Harness**: Includes a dummy Rails app for self-contained testing and development.
 
 ## Installation
 
 ### System Dependencies
 
-The gem requires `imagemagick` for image processing and `xclip` for clipboard integration (Linux).
+The gem uses [Ferrum](https://github.com/rubycdp/ferrum) (Chrome) and [ChunkyPNG](https://github.com/wvanbergen/chunky_png) for image processing. You need a Chrome-compatible browser installed locally. **No ImageMagick or `xclip` required.**
 
-For Ubuntu-based systems:
-```bash
-sudo apt-get install imagemagick xclip
-```
+Clipboard support via `xclip` is optional and opt-in (`config.copy_to_clipboard = true`).
 
 ### Gem Installation
 
@@ -46,12 +43,16 @@ You can configure the tester in a Rails initializer:
 
 ```ruby
 LookbookVisualTester.configure do |config|
-  config.lookbook_host = "http://localhost:3000" # Where your rails app is running
+  config.lookbook_host = "http://localhost:5000" # Where your rails app is running
   config.base_path = "coverage/screenshots"    # Root for screenshots
-  config.copy_to_clipboard = true                # Enable xclip support
+  config.copy_to_clipboard = false               # Default: off; opt in to xclip
   config.threads = 4                             # Number of parallel threads (default: 4)
   config.wait_time = 0.5                         # Optional: Wait time (seconds) before screenshot (fixes blank screens)
-  config.tolerance = 0.05                        # Optional: Mismatch tolerance (0.0 to 1.0) to ignore minor rendering differences
+  config.tolerance = 0.0                         # Optional: Mismatch tolerance (0.0 to 1.0) to ignore minor rendering differences
+  config.preview_checker_setup = -> {
+    # Provide auth/helpers for deep checks, e.g.:
+    # Current.user = LookbookFixtures.demo_user
+  }
 end
 ```
 
@@ -82,6 +83,14 @@ Runs all Lookbook previews, generates a terminal summary, and creates an HTML re
 ```bash
 bundle exec rake lookbook:test
 ```
+
+#### Start Server, Test, Stop (for agents/CI)
+Starts Rails, waits for Lookbook to be reachable, runs `lookbook:test`, and stops the server.
+```bash
+bundle exec rake lookbook:server_and_test
+```
+
+Set `LOOKBOOK_SERVER_TIMEOUT` (seconds) and optional `LOOKBOOK_SERVER_LOG` (path to capture server output) as needed.
 
 #### Test a Specific Preview
 Filter previews by name or label.

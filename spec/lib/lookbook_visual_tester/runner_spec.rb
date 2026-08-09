@@ -28,7 +28,6 @@ RSpec.describe LookbookVisualTester::Runner do
     # Mock VariantResolver
     allow(LookbookVisualTester::VariantResolver).to receive(:new).and_call_original
   end
-
   describe '#run' do
     context 'without variants (default)' do
       it 'visits the preview url' do
@@ -101,6 +100,46 @@ RSpec.describe LookbookVisualTester::Runner do
         expect(mock_driver).to have_received(:resize_window).with(390, 800) # iPhone width (height defaults if not specified?) - Actually resolver doesn't support height yet unless window_size added.
         # Wait, plan said 'parse to int'. Need to update expectation based on impl.
       end
+    end
+  end
+
+  context 'with a custom output stream' do
+    let(:output) { StringIO.new }
+
+    before do
+      allow(LookbookVisualTester::ImageComparator).to receive(:new).and_return(
+        double(call: { mismatch: 0.0 })
+      )
+      allow(FileUtils).to receive(:cp)
+      allow(LookbookVisualTester::ImageTrimmer).to receive(:call).and_return('path')
+    end
+
+    it 'writes progress to the provided stream' do
+      runner = described_class.new(output: output)
+      runner.run
+
+      expect(output.string).to include('Found 1 previews')
+    end
+  end
+
+  context 'image trimming' do
+    before do
+      allow(LookbookVisualTester::ImageComparator).to receive(:new).and_return(
+        double(call: { mismatch: 0.0 })
+      )
+      allow(FileUtils).to receive(:cp)
+      allow(File).to receive(:exist?).and_call_original
+      allow(File).to receive(:exist?).with(String).and_return(true)
+    end
+
+    it 'trims the screenshot via ImageTrimmer without calling ImageMagick' do
+      expect(Kernel).not_to receive(:system).with(/convert/)
+      allow(LookbookVisualTester::ImageTrimmer).to receive(:call)
+
+      runner = described_class.new
+      runner.run
+
+      expect(LookbookVisualTester::ImageTrimmer).to have_received(:call).with(String).at_least(:once)
     end
   end
 end
