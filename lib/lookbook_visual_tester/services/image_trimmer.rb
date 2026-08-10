@@ -13,7 +13,21 @@ module LookbookVisualTester
 
     def self.call(path, padding: DEFAULT_PADDING)
       image = ChunkyPNG::Image.from_file(path)
+      min_x, max_x, min_y, max_y = content_bounding_box(image)
 
+      # No content found: keep the original image.
+      return path if max_x < min_x
+
+      cropped = image.crop(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
+      cropped.border!(padding, ChunkyPNG::Color::TRANSPARENT)
+      cropped.save(path)
+      path
+    end
+
+    # ChunkyPNG's own #trim only strips a single uniform border color; this
+    # tolerates either white or transparent border pixels, so the bounding
+    # box still needs a manual scan.
+    def self.content_bounding_box(image)
       min_x = image.width
       max_x = -1
       min_y = image.height
@@ -30,26 +44,7 @@ module LookbookVisualTester
         end
       end
 
-      # No content found: keep the original image.
-      return path if max_x < min_x
-
-      content_width = max_x - min_x + 1
-      content_height = max_y - min_y + 1
-      new_width = content_width + (padding * 2)
-      new_height = content_height + (padding * 2)
-
-      trimmed = ChunkyPNG::Image.new(new_width, new_height, ChunkyPNG::Color::TRANSPARENT)
-
-      image.height.times do |y|
-        image.width.times do |x|
-          next if x < min_x || x > max_x || y < min_y || y > max_y
-
-          trimmed[x - min_x + padding, y - min_y + padding] = image[x, y]
-        end
-      end
-
-      trimmed.save(path)
-      path
+      [min_x, max_x, min_y, max_y]
     end
 
     def self.border_pixel?(color)

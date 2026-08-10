@@ -76,9 +76,6 @@ module LookbookVisualTester
 
       def save_screenshot(path)
         @browser.screenshot(path: path, full: true)
-        # NOTE: full: true captures the whole page.
-        # If we capture viewport only, we should remove full: true.
-        # Usually for visual testing full page is better unless specifically testing viewport.
       end
 
       def page_source

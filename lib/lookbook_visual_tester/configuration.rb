@@ -54,16 +54,6 @@ module LookbookVisualTester
       @diff_dir = @base_path.join('diff')
       @history_dir = @base_path.join('history')
     end
-
-    class << self
-      def config
-        @config ||= new
-      end
-
-      def configure
-        yield(config)
-      end
-    end
   end
 
   def self.config

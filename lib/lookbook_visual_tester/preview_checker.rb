@@ -89,13 +89,15 @@ module LookbookVisualTester
 
       begin
         preview_instance = preview_class.new
-        return CheckResult.new(preview_name: preview.name, example_name: example_name, status: :passed) unless preview_instance.respond_to?(example_name)
+        unless preview_instance.respond_to?(example_name)
+          return passed_result(preview,
+                               example_name)
+        end
 
         preview_instance.public_send(example_name)
-        CheckResult.new(preview_name: preview.name, example_name: example_name, status: :passed)
+        passed_result(preview, example_name)
       rescue StandardError => e
-        CheckResult.new(preview_name: preview.name, example_name: example_name, status: :failed,
-                        error: e.message, backtrace: e.backtrace)
+        failed_result(preview, example_name, e.message, e.backtrace)
       end
     end
 
@@ -108,34 +110,37 @@ module LookbookVisualTester
           result = preview_class.preview_example(example_name)
         else
           preview_instance = preview_class.new
-          return CheckResult.new(preview_name: preview.name, example_name: example_name, status: :passed) unless preview_instance.respond_to?(example_name)
+          unless preview_instance.respond_to?(example_name)
+            return passed_result(preview,
+                                 example_name)
+          end
+
           result = preview_instance.public_send(example_name)
         end
 
         result = result[:component] if result.is_a?(Hash) && result.key?(:component)
 
-        if result.respond_to?(:render_in)
-          output = result.render_in(build_view_context)
-          if output.is_a?(String) && output.include?('ActionView::Template::Error')
-            return CheckResult.new(preview_name: preview.name, example_name: example_name,
-                                   status: :failed, error: 'ActionView::Template::Error found in rendered output',
-                                   backtrace: [])
-          end
-        elsif result.is_a?(String)
-          if result.include?('ActionView::Template::Error')
-            return CheckResult.new(preview_name: preview.name, example_name: example_name,
-                                   status: :failed, error: 'ActionView::Template::Error found in rendered output',
-                                   backtrace: [])
-          end
-        elsif result.nil?
-          verify_implicit_template!(preview_class, example_name)
+        output = result.respond_to?(:render_in) ? result.render_in(build_view_context) : result
+        if output.is_a?(String) && output.include?('ActionView::Template::Error')
+          return failed_result(preview, example_name,
+                               'ActionView::Template::Error found in rendered output', [])
         end
 
-        CheckResult.new(preview_name: preview.name, example_name: example_name, status: :passed)
+        verify_implicit_template!(preview_class, example_name) if result.nil?
+
+        passed_result(preview, example_name)
       rescue StandardError => e
-        CheckResult.new(preview_name: preview.name, example_name: example_name, status: :failed,
-                        error: e.message, backtrace: e.backtrace)
+        failed_result(preview, example_name, e.message, e.backtrace)
       end
+    end
+
+    def passed_result(preview, example_name)
+      CheckResult.new(preview_name: preview.name, example_name: example_name, status: :passed)
+    end
+
+    def failed_result(preview, example_name, error, backtrace)
+      CheckResult.new(preview_name: preview.name, example_name: example_name, status: :failed,
+                      error: error, backtrace: backtrace)
     end
 
     def build_view_context
@@ -162,9 +167,9 @@ module LookbookVisualTester
 
       return if extensions.any? { |ext| File.exist?("#{path}#{ext}") }
 
-      raise ViewComponent::MissingPreviewTemplateError.new(
-        "Preview #{example_name} returned nil and no template found at #{path}.* (checked erb, haml, slim)"
-      ) if defined?(ViewComponent::MissingPreviewTemplateError)
+      if defined?(ViewComponent::MissingPreviewTemplateError)
+        raise ViewComponent::MissingPreviewTemplateError, "Preview #{example_name} returned nil and no template found at #{path}.* (checked erb, haml, slim)"
+      end
 
       raise "Preview returned nil and no template found at #{path}.*"
     end
